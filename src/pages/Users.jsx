@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import Toast from '../components/Toast'
 import { Plus, Search, Edit2, Trash2, X, Shield, User as UserIcon } from 'lucide-react'
 import userService from '../services/userService'
 
@@ -11,6 +12,7 @@ function Users() {
   const [editingUser, setEditingUser] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRol, setFilterRol] = useState('')
+  const [toast, setToast] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -21,6 +23,10 @@ function Users() {
     rol: 'operario',
     activo: true,
   })
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+  }
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
@@ -36,7 +42,7 @@ function Users() {
       }
     } catch (error) {
       console.error('Error al cargar usuarios:', error)
-      alert('Error al cargar los usuarios')
+      showToast('Error al cargar los usuarios', 'error')
     } finally {
       setLoading(false)
     }
@@ -57,7 +63,7 @@ function Users() {
         // Actualizar
         const response = await userService.update(editingUser.id, formData)
         if (response.success) {
-          alert('Usuario actualizado exitosamente')
+          showToast(`Usuario ${formData.username} actualizado exitosamente`, 'success')
           loadUsers()
           closeModal()
         }
@@ -65,14 +71,14 @@ function Users() {
         // Crear nuevo
         const response = await userService.create(formData)
         if (response.success) {
-          alert('Usuario creado exitosamente')
+          showToast(`Usuario ${formData.username} creado exitosamente`, 'success')
           loadUsers()
           closeModal()
         }
       }
     } catch (error) {
       console.error('Error:', error)
-      alert(error.response?.data?.error || 'Error al guardar el usuario')
+      showToast(error.response?.data?.error || 'Error al guardar el usuario', 'error')
     }
   }
 
@@ -95,12 +101,12 @@ function Users() {
     try {
       const response = await userService.delete(id)
       if (response.success) {
-        alert('Usuario desactivado exitosamente')
+        showToast('Usuario desactivado exitosamente', 'warning')
         loadUsers()
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al desactivar el usuario')
+      showToast('Error al desactivar el usuario', 'error')
     }
   }
 
@@ -389,6 +395,9 @@ function Users() {
           </div>
         </div>
       )}
+
+      {/* Toast de notificaciones */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }

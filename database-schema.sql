@@ -261,8 +261,12 @@ EXECUTE FUNCTION actualizar_cantidad_grupo();
 -- ============================================
 
 INSERT INTO usuarios (username, password, nombre, rol)
-VALUES ('admin', '$2b$10$YourHashedPasswordHere', 'Administrador', 'admin')
-ON CONFLICT (username) DO NOTHING;
+VALUES ('admin', 'admin123', 'Administrador', 'admin')
+ON CONFLICT (username) DO UPDATE SET
+  password = 'admin123',
+  nombre = 'Administrador',
+  rol = 'admin',
+  activo = true;
 
 -- ============================================
 -- Vistas útiles

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import Toast from '../components/Toast'
 import { Plus, Search, Edit2, Trash2, Eye, X } from 'lucide-react'
 import animalService from '../services/animalService'
 
@@ -11,6 +12,7 @@ function Animals() {
   const [editingAnimal, setEditingAnimal] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('')
+  const [toast, setToast] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -24,6 +26,10 @@ function Animals() {
     estado: 'activo',
     grupo_id: null,
   })
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+  }
 
   // Cargar animales al montar el componente
   useEffect(() => {
@@ -39,7 +45,7 @@ function Animals() {
       }
     } catch (error) {
       console.error('Error al cargar animales:', error)
-      alert('Error al cargar los animales')
+      showToast('Error al cargar los animales', 'error')
     } finally {
       setLoading(false)
     }
@@ -60,7 +66,7 @@ function Animals() {
         // Actualizar
         const response = await animalService.update(editingAnimal.id, formData)
         if (response.success) {
-          alert('Animal actualizado exitosamente')
+          showToast(`Animal ${formData.codigo} actualizado exitosamente`, 'success')
           loadAnimals()
           closeModal()
         }
@@ -68,14 +74,14 @@ function Animals() {
         // Crear nuevo
         const response = await animalService.create(formData)
         if (response.success) {
-          alert('Animal registrado exitosamente')
+          showToast(`Animal ${formData.codigo} registrado exitosamente`, 'success')
           loadAnimals()
           closeModal()
         }
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al guardar el animal')
+      showToast('Error al guardar el animal', 'error')
     }
   }
 
@@ -101,12 +107,12 @@ function Animals() {
     try {
       const response = await animalService.delete(id)
       if (response.success) {
-        alert('Animal eliminado exitosamente')
+        showToast('Animal eliminado exitosamente', 'success')
         loadAnimals()
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al eliminar el animal')
+      showToast('Error al eliminar el animal', 'error')
     }
   }
 
@@ -394,6 +400,9 @@ function Animals() {
           </div>
         </div>
       )}
+
+      {/* Toast de notificaciones */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
