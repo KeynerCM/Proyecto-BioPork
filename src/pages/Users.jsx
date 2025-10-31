@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Toast from '../components/Toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { Plus, Search, Edit2, Trash2, X, Shield, User as UserIcon } from 'lucide-react'
 import userService from '../services/userService'
 
@@ -13,6 +14,7 @@ function Users() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRol, setFilterRol] = useState('')
   const [toast, setToast] = useState(null)
+  const [confirmDialog, setConfirmDialog] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -95,19 +97,25 @@ function Users() {
     setShowModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de desactivar este usuario?')) return
-
-    try {
-      const response = await userService.delete(id)
-      if (response.success) {
-        showToast('Usuario desactivado exitosamente', 'warning')
-        loadUsers()
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      showToast('Error al desactivar el usuario', 'error')
-    }
+  const handleDelete = async (id, username) => {
+    setConfirmDialog({
+      title: 'Desactivar Usuario',
+      message: `¿Estás seguro de que deseas desactivar al usuario ${username}? Esta acción se puede revertir.`,
+      onConfirm: async () => {
+        try {
+          const response = await userService.delete(id)
+          if (response.success) {
+            showToast(`Usuario ${username} desactivado exitosamente`, 'warning')
+            loadUsers()
+          }
+        } catch (error) {
+          console.error('Error:', error)
+          showToast('Error al desactivar el usuario', 'error')
+        }
+        setConfirmDialog(null)
+      },
+      onCancel: () => setConfirmDialog(null)
+    })
   }
 
   const closeModal = () => {
@@ -275,7 +283,7 @@ function Users() {
                         <Edit2 size={18} />
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
+                        onClick={() => handleDelete(user.id, user.username)}
                         className="text-red-600 hover:text-red-900"
                         title="Desactivar"
                       >
@@ -398,6 +406,17 @@ function Users() {
 
       {/* Toast de notificaciones */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* Modal de confirmación */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+          type="warning"
+        />
+      )}
     </div>
   )
 }

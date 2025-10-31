@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Toast from '../components/Toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { Plus, Search, Edit2, Trash2, Eye, X } from 'lucide-react'
 import animalService from '../services/animalService'
 
@@ -13,6 +14,7 @@ function Animals() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('')
   const [toast, setToast] = useState(null)
+  const [confirmDialog, setConfirmDialog] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -101,19 +103,25 @@ function Animals() {
     setShowModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este animal?')) return
-
-    try {
-      const response = await animalService.delete(id)
-      if (response.success) {
-        showToast('Animal eliminado exitosamente', 'success')
-        loadAnimals()
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      showToast('Error al eliminar el animal', 'error')
-    }
+  const handleDelete = async (id, codigo) => {
+    setConfirmDialog({
+      title: 'Eliminar Animal',
+      message: `¿Estás seguro de que deseas eliminar el animal ${codigo}? Esta acción no se puede deshacer.`,
+      onConfirm: async () => {
+        try {
+          const response = await animalService.delete(id)
+          if (response.success) {
+            showToast(`Animal ${codigo} eliminado exitosamente`, 'success')
+            loadAnimals()
+          }
+        } catch (error) {
+          console.error('Error:', error)
+          showToast('Error al eliminar el animal', 'error')
+        }
+        setConfirmDialog(null)
+      },
+      onCancel: () => setConfirmDialog(null)
+    })
   }
 
   const closeModal = () => {
@@ -262,7 +270,7 @@ function Animals() {
                         <Edit2 size={18} />
                       </button>
                       <button
-                        onClick={() => handleDelete(animal.id)}
+                        onClick={() => handleDelete(animal.id, animal.codigo)}
                         className="text-red-600 hover:text-red-900"
                         title="Eliminar"
                       >
@@ -403,6 +411,17 @@ function Animals() {
 
       {/* Toast de notificaciones */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* Modal de confirmación */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+          type="danger"
+        />
+      )}
     </div>
   )
 }
