@@ -20,7 +20,11 @@ exports.handler = async (event, context) => {
         tipo,
         raza,
         fecha_nacimiento,
-        estado
+        peso_inicial,
+        peso_actual,
+        sexo,
+        estado,
+        grupo_id
       FROM animales
       ORDER BY fecha_nacimiento DESC
     `
