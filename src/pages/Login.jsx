@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PiggyBank, Lock, User } from 'lucide-react'
 import { motion } from 'framer-motion'
+import userService from '../services/userService'
 
 function Login({ onLogin }) {
   const [formData, setFormData] = useState({
@@ -8,20 +9,28 @@ function Login({ onLogin }) {
     password: '',
   })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
-    // Validación básica (temporal, esto se conectará con el backend)
-    if (formData.username && formData.password) {
-      onLogin({
-        id: 1,
-        nombre: formData.username,
-        rol: 'admin',
-      })
-    } else {
-      setError('Por favor completa todos los campos')
+    try {
+      const response = await userService.login(formData.username, formData.password)
+      
+      if (response.success) {
+        // Guardar usuario en localStorage
+        localStorage.setItem('user', JSON.stringify(response.user))
+        onLogin(response.user)
+      } else {
+        setError(response.error || 'Error al iniciar sesión')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setError('Usuario o contraseña incorrectos')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -82,9 +91,10 @@ function Login({ onLogin }) {
 
           <button
             type="submit"
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors"
+            disabled={loading}
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Iniciar Sesión
+            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
 

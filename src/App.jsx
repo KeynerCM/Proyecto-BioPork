@@ -9,6 +9,7 @@ import Health from './pages/Health'
 import Groups from './pages/Groups'
 import Statistics from './pages/Statistics'
 import Notifications from './pages/Notifications'
+import Users from './pages/Users'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -49,6 +50,7 @@ function App() {
         <Route path="/grupos" element={<Groups />} />
         <Route path="/estadisticas" element={<Statistics />} />
         <Route path="/notificaciones" element={<Notifications />} />
+        <Route path="/usuarios" element={<Users />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

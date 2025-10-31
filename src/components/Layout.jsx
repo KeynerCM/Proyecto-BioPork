@@ -9,7 +9,8 @@ import {
   Bell,
   LogOut,
   Menu,
-  X
+  X,
+  Shield
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -21,6 +22,7 @@ const menuItems = [
   { path: '/grupos', icon: Users, label: 'Grupos' },
   { path: '/estadisticas', icon: BarChart3, label: 'Estadísticas' },
   { path: '/notificaciones', icon: Bell, label: 'Notificaciones' },
+  { path: '/usuarios', icon: Shield, label: 'Usuarios', adminOnly: true },
 ]
 
 function Layout({ children, user, onLogout }) {
@@ -64,25 +66,27 @@ function Layout({ children, user, onLogout }) {
         } lg:translate-x-0 w-64`}
       >
         <nav className="p-4 space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = location.pathname === item.path
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary-100 text-primary-700 font-medium'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
+          {menuItems
+            .filter((item) => !item.adminOnly || user?.rol === 'admin')
+            .map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.path
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-primary-100 text-primary-700 font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
         </nav>
       </aside>
 
