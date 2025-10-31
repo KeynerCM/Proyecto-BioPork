@@ -20,7 +20,8 @@
     "recharts": "^2.13.3",
     "chart.js": "^4.4.7",
     "react-chartjs-2": "^5.2.0",
-    "html2pdf.js": "^0.10.2"
+    "html2pdf.js": "^0.10.2",
+    "@netlify/neon": "^0.11.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
