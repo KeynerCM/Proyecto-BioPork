@@ -126,6 +126,22 @@ function Animals() {
     })
   }
 
+  const openModalForNew = async () => {
+    try {
+      // Obtener el siguiente código automáticamente
+      const response = await animalService.getNextCodigo()
+      if (response.success) {
+        setFormData((prev) => ({
+          ...prev,
+          codigo: response.codigo,
+        }))
+      }
+    } catch (error) {
+      console.error('Error al obtener código:', error)
+    }
+    setShowModal(true)
+  }
+
   // Filtrar animales
   const filteredAnimals = animals.filter((animal) => {
     const matchesSearch =
@@ -142,7 +158,7 @@ function Animals() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Animales</h1>
           <p className="text-gray-600">Administra el registro de todos los animales</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
+        <Button onClick={openModalForNew}>
           <Plus size={20} className="inline mr-2" />
           Registrar Animal
         </Button>
@@ -279,9 +295,14 @@ function Animals() {
                     name="codigo"
                     value={formData.codigo}
                     onChange={handleInputChange}
-                    className="input-field"
+                    className="input-field bg-gray-50"
                     required
+                    readOnly={!editingAnimal}
+                    title={!editingAnimal ? 'Código generado automáticamente' : 'Código del animal'}
                   />
+                  {!editingAnimal && (
+                    <p className="text-xs text-gray-500 mt-1">Código generado automáticamente</p>
+                  )}
                 </div>
 
                 <div>

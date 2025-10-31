@@ -7,6 +7,12 @@ export const animalService = {
     return response.data
   },
 
+  // Obtener el siguiente código disponible
+  getNextCodigo: async () => {
+    const response = await api.get('/get-next-codigo')
+    return response.data
+  },
+
   // Obtener un animal por ID
   getById: async (id) => {
     const response = await api.get(`/get-animal-by-id?id=${id}`)
