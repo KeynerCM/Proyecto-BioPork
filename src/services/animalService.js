@@ -9,7 +9,7 @@ export const animalService = {
 
   // Obtener un animal por ID
   getById: async (id) => {
-    const response = await api.get(`/get-animal?id=${id}`)
+    const response = await api.get(`/get-animal-by-id?id=${id}`)
     return response.data
   },
 
@@ -25,9 +25,9 @@ export const animalService = {
     return response.data
   },
 
-  // Eliminar animal (cambiar estado a inactivo)
-  delete: async (id, motivo) => {
-    const response = await api.post('/remove-animal', { id, motivo })
+  // Eliminar animal
+  delete: async (id) => {
+    const response = await api.delete(`/delete-animal?id=${id}`)
     return response.data
   },
 

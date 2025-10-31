@@ -1,8 +1,140 @@
+import { useState, useEffect } from 'react'
 import Card from '../components/Card'
 import Button from '../components/Button'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Edit2, Trash2, Eye, X } from 'lucide-react'
+import animalService from '../services/animalService'
 
 function Animals() {
+  const [animals, setAnimals] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingAnimal, setEditingAnimal] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState('')
+
+  // Form state
+  const [formData, setFormData] = useState({
+    codigo: '',
+    tipo: 'engorde',
+    raza: '',
+    fecha_nacimiento: '',
+    peso_inicial: '',
+    peso_actual: '',
+    sexo: 'macho',
+    estado: 'activo',
+    grupo_id: null,
+  })
+
+  // Cargar animales al montar el componente
+  useEffect(() => {
+    loadAnimals()
+  }, [])
+
+  const loadAnimals = async () => {
+    try {
+      setLoading(true)
+      const response = await animalService.getAll()
+      if (response.success) {
+        setAnimals(response.data)
+      }
+    } catch (error) {
+      console.error('Error al cargar animales:', error)
+      alert('Error al cargar los animales')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      if (editingAnimal) {
+        // Actualizar
+        const response = await animalService.update(editingAnimal.id, formData)
+        if (response.success) {
+          alert('Animal actualizado exitosamente')
+          loadAnimals()
+          closeModal()
+        }
+      } else {
+        // Crear nuevo
+        const response = await animalService.create(formData)
+        if (response.success) {
+          alert('Animal registrado exitosamente')
+          loadAnimals()
+          closeModal()
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al guardar el animal')
+    }
+  }
+
+  const handleEdit = (animal) => {
+    setEditingAnimal(animal)
+    setFormData({
+      codigo: animal.codigo,
+      tipo: animal.tipo,
+      raza: animal.raza || '',
+      fecha_nacimiento: animal.fecha_nacimiento,
+      peso_inicial: animal.peso_inicial || '',
+      peso_actual: animal.peso_actual || '',
+      sexo: animal.sexo || 'macho',
+      estado: animal.estado,
+      grupo_id: animal.grupo_id || null,
+    })
+    setShowModal(true)
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('¿Estás seguro de eliminar este animal?')) return
+
+    try {
+      const response = await animalService.delete(id)
+      if (response.success) {
+        alert('Animal eliminado exitosamente')
+        loadAnimals()
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al eliminar el animal')
+    }
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setEditingAnimal(null)
+    setFormData({
+      codigo: '',
+      tipo: 'engorde',
+      raza: '',
+      fecha_nacimiento: '',
+      peso_inicial: '',
+      peso_actual: '',
+      sexo: 'macho',
+      estado: 'activo',
+      grupo_id: null,
+    })
+  }
+
+  // Filtrar animales
+  const filteredAnimals = animals.filter((animal) => {
+    const matchesSearch =
+      animal.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (animal.raza && animal.raza.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesType = !filterType || animal.tipo === filterType
+    return matchesSearch && matchesType
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -10,7 +142,7 @@ function Animals() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Animales</h1>
           <p className="text-gray-600">Administra el registro de todos los animales</p>
         </div>
-        <Button>
+        <Button onClick={() => setShowModal(true)}>
           <Plus size={20} className="inline mr-2" />
           Registrar Animal
         </Button>
@@ -22,24 +154,228 @@ function Animals() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Buscar por ID, raza o tipo..."
+              placeholder="Buscar por código o raza..."
               className="input-field pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select className="input-field w-48">
+          <select className="input-field w-48" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
             <option value="">Todos los tipos</option>
             <option value="engorde">Engorde</option>
             <option value="reproduccion">Reproducción</option>
           </select>
         </div>
 
-        <div className="text-center text-gray-500 py-12">
-          <p>No hay animales registrados aún</p>
-          <p className="text-sm mt-2">Comienza registrando tu primer animal</p>
-        </div>
+        {loading ? (
+          <div className="text-center text-gray-500 py-12">
+            <p>Cargando animales...</p>
+          </div>
+        ) : filteredAnimals.length === 0 ? (
+          <div className="text-center text-gray-500 py-12">
+            <p>No hay animales registrados aún</p>
+            <p className="text-sm mt-2">Comienza registrando tu primer animal</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Código
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Raza
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha Nac.
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Peso
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAnimals.map((animal) => (
+                  <tr key={animal.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{animal.codigo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          animal.tipo === 'engorde' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                        }`}
+                      >
+                        {animal.tipo}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{animal.raza || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{animal.fecha_nacimiento}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {animal.peso_actual ? `${animal.peso_actual} kg` : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          animal.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {animal.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => handleEdit(animal)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Editar"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(animal.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Eliminar"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
+
+      {/* Modal de formulario */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {editingAnimal ? 'Editar Animal' : 'Registrar Nuevo Animal'}
+              </h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    value={formData.codigo}
+                    onChange={handleInputChange}
+                    className="input-field"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo <span className="text-red-500">*</span>
+                  </label>
+                  <select name="tipo" value={formData.tipo} onChange={handleInputChange} className="input-field" required>
+                    <option value="engorde">Engorde</option>
+                    <option value="reproduccion">Reproducción</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Raza</label>
+                  <input
+                    type="text"
+                    name="raza"
+                    value={formData.raza}
+                    onChange={handleInputChange}
+                    className="input-field"
+                    placeholder="Ej: Landrace, Yorkshire"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha de Nacimiento <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha_nacimiento"
+                    value={formData.fecha_nacimiento}
+                    onChange={handleInputChange}
+                    className="input-field"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Peso Inicial (kg)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="peso_inicial"
+                    value={formData.peso_inicial}
+                    onChange={handleInputChange}
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Peso Actual (kg)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="peso_actual"
+                    value={formData.peso_actual}
+                    onChange={handleInputChange}
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sexo</label>
+                  <select name="sexo" value={formData.sexo} onChange={handleInputChange} className="input-field">
+                    <option value="macho">Macho</option>
+                    <option value="hembra">Hembra</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                  <select name="estado" value={formData.estado} onChange={handleInputChange} className="input-field">
+                    <option value="activo">Activo</option>
+                    <option value="vendido">Vendido</option>
+                    <option value="muerto">Muerto</option>
+                    <option value="trasladado">Trasladado</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button type="button" variant="secondary" onClick={closeModal}>
+                  Cancelar
+                </Button>
+                <Button type="submit">{editingAnimal ? 'Actualizar' : 'Registrar'}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 export default Animals
+
