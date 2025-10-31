@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Netlify Functions para BioPork",
   "dependencies": {
-    "@netlify/neon": "^0.11.2"
+    "@neondatabase/serverless": "^0.10.4"
   }
 }

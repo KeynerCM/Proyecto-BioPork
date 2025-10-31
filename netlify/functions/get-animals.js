@@ -1,4 +1,4 @@
-const { neon } = require('@netlify/neon')
+const { neon } = require('@neondatabase/serverless')
 
 exports.handler = async (event, context) => {
   // Solo permitir métodos GET
@@ -10,8 +10,8 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Netlify DB automáticamente usa NETLIFY_DATABASE_URL
-    const sql = neon()
+    // Conectar a Neon usando la variable de entorno
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
     
     const result = await sql`
       SELECT 
