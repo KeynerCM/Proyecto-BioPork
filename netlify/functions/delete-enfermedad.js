@@ -1,41 +1,28 @@
-import { neon } from '@neondatabase/serverless'
+﻿const { neon } = require('@neondatabase/serverless')
 
-export default async (req, context) => {
-  if (req.method !== 'DELETE') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    })
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'DELETE') {
+    return { statusCode: 405, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Method not allowed' }) }
   }
 
   try {
-    const url = new URL(req.url)
-    const id = url.searchParams.get('id')
+    const id = event.queryStringParameters?.id
 
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return { statusCode: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'ID is required' }) }
     }
 
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     await sql`DELETE FROM enfermedades WHERE id = ${id}`
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true }) }
   } catch (error) {
     console.error('Error deleting enfermedad:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: error.message }) }
   }
 }
 
-export const config = {
-  path: '/api/delete-enfermedad'
-}
+
+
+

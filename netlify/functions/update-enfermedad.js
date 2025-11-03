@@ -1,15 +1,12 @@
-import { neon } from '@neondatabase/serverless'
+﻿const { neon } = require('@neondatabase/serverless')
 
-export default async (req, context) => {
-  if (req.method !== 'PUT') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    })
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'PUT') {
+    return { statusCode: 405, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Method not allowed' }) }
   }
 
   try {
-    const data = await req.json()
+    const data = JSON.parse(event.body)
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     const result = await sql`
@@ -30,19 +27,15 @@ export default async (req, context) => {
       RETURNING *
     `
 
-    return new Response(JSON.stringify({ success: true, data: result[0] }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true, data: result[0] }) }
   } catch (error) {
     console.error('Error updating enfermedad:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: error.message }) }
   }
 }
 
 export const config = {
   path: '/api/update-enfermedad'
 }
+
+

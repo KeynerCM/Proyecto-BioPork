@@ -1,11 +1,8 @@
-import { neon } from '@neondatabase/serverless'
+﻿const { neon } = require('@neondatabase/serverless')
 
-export default async (req, context) => {
-  if (req.method !== 'GET') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    })
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'GET') {
+    return { statusCode: 405, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Method not allowed' }) }
   }
 
   try {
@@ -24,19 +21,13 @@ export default async (req, context) => {
       ORDER BY p.fecha_parto DESC
     `
 
-    return new Response(JSON.stringify({ success: true, data: partos }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true, data: partos }) }
   } catch (error) {
     console.error('Error fetching partos:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: error.message }) }
   }
 }
 
-export const config = {
-  path: '/api/get-partos'
-}
+
+
+
