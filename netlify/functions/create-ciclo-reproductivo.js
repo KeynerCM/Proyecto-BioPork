@@ -10,7 +10,7 @@ export default async (req, context) => {
 
   try {
     const data = await req.json()
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     // Calcular fecha estimada de parto (114 días después de la monta)
     let fechaEstimadaParto = null

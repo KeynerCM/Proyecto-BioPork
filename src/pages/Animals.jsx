@@ -6,7 +6,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { Plus, Search, Edit2, Trash2, Eye, X } from 'lucide-react'
 import animalService from '../services/animalService'
 
-function Animals() {
+function Animals({ user }) {
   const [animals, setAnimals] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -15,6 +15,10 @@ function Animals() {
   const [filterType, setFilterType] = useState('')
   const [toast, setToast] = useState(null)
   const [confirmDialog, setConfirmDialog] = useState(null)
+
+  // Verificar permisos
+  const canEdit = user?.rol === 'admin' || user?.rol === 'operario'
+  const canDelete = user?.rol === 'admin'
 
   // Form state
   const [formData, setFormData] = useState({
@@ -172,10 +176,12 @@ function Animals() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Animales</h1>
           <p className="text-gray-600">Administra el registro de todos los animales</p>
         </div>
-        <Button onClick={openModalForNew}>
-          <Plus size={20} className="inline mr-2" />
-          Registrar Animal
-        </Button>
+        {canEdit && (
+          <Button onClick={openModalForNew}>
+            <Plus size={20} className="inline mr-2" />
+            Registrar Animal
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -262,20 +268,27 @@ function Animals() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => handleEdit(animal)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Editar"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(animal.id, animal.codigo)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Eliminar"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleEdit(animal)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Editar"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(animal.id, animal.codigo)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                      {!canEdit && !canDelete && (
+                        <span className="text-gray-400 text-xs">Solo lectura</span>
+                      )}
                     </td>
                   </tr>
                 ))}

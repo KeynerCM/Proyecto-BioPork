@@ -19,7 +19,7 @@ export default async (req, context) => {
       })
     }
 
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     await sql`DELETE FROM ciclos_reproductivos WHERE id = ${id}`
 

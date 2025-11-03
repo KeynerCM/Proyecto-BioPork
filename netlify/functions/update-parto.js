@@ -10,7 +10,7 @@ export default async (req, context) => {
 
   try {
     const data = await req.json()
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     // Recalcular lechones muertos
     const lechonesNacidos = parseInt(data.lechones_nacidos)

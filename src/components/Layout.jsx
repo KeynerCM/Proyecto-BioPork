@@ -33,24 +33,29 @@ function Layout({ children, user, onLogout }) {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm fixed w-full top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden mr-4 text-gray-600 hover:text-gray-900"
+                className="lg:hidden text-gray-600 hover:text-gray-900"
               >
                 {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              <h1 className="text-2xl font-bold text-primary-600">BioPork</h1>
+              <div className="flex items-center gap-2">
+                <PiggyBank size={28} className="text-primary-600" />
+                <h1 className="text-2xl font-bold text-primary-600">BioPork</h1>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {user?.nombre || 'Usuario'}
-              </span>
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-gray-700">{user?.nombre || 'Usuario'}</p>
+                <p className="text-xs text-gray-500 capitalize">{user?.rol || 'Sin rol'}</p>
+              </div>
               <button
                 onClick={onLogout}
                 className="flex items-center text-gray-600 hover:text-primary-600 transition-colors"
+                title="Cerrar sesión"
               >
                 <LogOut size={20} />
               </button>

@@ -7,7 +7,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { cicloReproductivoService, partoService } from '../services/reproductionService'
 import { animalService } from '../services/animalService'
 
-function Reproduction() {
+function Reproduction({ user }) {
   const [activeTab, setActiveTab] = useState('ciclos')
   const [ciclos, setCiclos] = useState([])
   const [partos, setPartos] = useState([])
@@ -17,6 +17,10 @@ function Reproduction() {
   const [editingItem, setEditingItem] = useState(null)
   const [toast, setToast] = useState(null)
   const [confirmDialog, setConfirmDialog] = useState(null)
+  
+  // Verificar permisos
+  const canEdit = user?.rol === 'admin' || user?.rol === 'operario'
+  const canDelete = user?.rol === 'admin'
   
   const [formData, setFormData] = useState({
     // Ciclo Reproductivo
@@ -259,10 +263,12 @@ function Reproduction() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión Reproductiva</h1>
           <p className="text-gray-600">Control de ciclos reproductivos y partos</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus size={20} className="mr-2" />
-          Nuevo Registro
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setShowModal(true)}>
+            <Plus size={20} className="mr-2" />
+            Nuevo Registro
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -360,20 +366,27 @@ function Reproduction() {
                         {getEstadoCicloBadge(ciclo.estado)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => handleEdit(ciclo)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(ciclo.id, 'ciclo', ciclo.cerda_codigo)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(ciclo)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(ciclo.id, 'ciclo', ciclo.cerda_codigo)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                        {!canEdit && !canDelete && (
+                          <span className="text-gray-400 text-xs">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -441,20 +454,27 @@ function Reproduction() {
                         {parto.estado_cerda || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => handleEdit(parto)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(parto.id, 'parto', parto.cerda_codigo)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(parto)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(parto.id, 'parto', parto.cerda_codigo)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                        {!canEdit && !canDelete && (
+                          <span className="text-gray-400 text-xs">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}

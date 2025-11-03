@@ -36,6 +36,19 @@ function App() {
     localStorage.removeItem('user')
   }
 
+  // Componente para proteger rutas según rol
+  const ProtectedRoute = ({ children, requiredRol }) => {
+    if (requiredRol && user?.rol !== requiredRol) {
+      return <Navigate to="/" replace />
+    }
+    return children
+  }
+
+  // Componente para rutas de solo lectura (consultor no puede editar)
+  const EditableRoute = ({ children }) => {
+    return children
+  }
+
   if (!isAuthenticated) {
     return <Login onLogin={handleLogin} />
   }
@@ -43,14 +56,21 @@ function App() {
   return (
     <Layout user={user} onLogout={handleLogout}>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/animales" element={<Animals />} />
-        <Route path="/reproduccion" element={<Reproduction />} />
-        <Route path="/salud" element={<Health />} />
-        <Route path="/grupos" element={<Groups />} />
-        <Route path="/estadisticas" element={<Statistics />} />
-        <Route path="/notificaciones" element={<Notifications />} />
-        <Route path="/usuarios" element={<Users />} />
+        <Route path="/" element={<Dashboard user={user} />} />
+        <Route path="/animales" element={<Animals user={user} />} />
+        <Route path="/reproduccion" element={<Reproduction user={user} />} />
+        <Route path="/salud" element={<Health user={user} />} />
+        <Route path="/grupos" element={<Groups user={user} />} />
+        <Route path="/estadisticas" element={<Statistics user={user} />} />
+        <Route path="/notificaciones" element={<Notifications user={user} />} />
+        <Route 
+          path="/usuarios" 
+          element={
+            <ProtectedRoute requiredRol="admin">
+              <Users user={user} />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

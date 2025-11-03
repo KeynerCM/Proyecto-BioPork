@@ -9,7 +9,7 @@ export default async (req, context) => {
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
     
     const enfermedades = await sql`
       SELECT 

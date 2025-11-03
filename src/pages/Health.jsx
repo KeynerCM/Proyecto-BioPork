@@ -7,7 +7,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { vacunacionService, enfermedadService } from '../services/healthService'
 import { animalService } from '../services/animalService'
 
-function Health() {
+function Health({ user }) {
   const [activeTab, setActiveTab] = useState('vacunaciones')
   const [vacunaciones, setVacunaciones] = useState([])
   const [enfermedades, setEnfermedades] = useState([])
@@ -17,6 +17,10 @@ function Health() {
   const [editingItem, setEditingItem] = useState(null)
   const [toast, setToast] = useState(null)
   const [confirmDialog, setConfirmDialog] = useState(null)
+  
+  // Verificar permisos
+  const canEdit = user?.rol === 'admin' || user?.rol === 'operario'
+  const canDelete = user?.rol === 'admin'
   
   const [formData, setFormData] = useState({
     animal_id: '',
@@ -236,10 +240,12 @@ function Health() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Control Sanitario</h1>
           <p className="text-gray-600">Gestión de vacunaciones y tratamientos</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus size={20} className="mr-2" />
-          Nuevo Registro
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setShowModal(true)}>
+            <Plus size={20} className="mr-2" />
+            Nuevo Registro
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -318,20 +324,27 @@ function Health() {
                         {vac.veterinario || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => handleEdit(vac)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(vac.id, 'vacunación', vac.tipo_vacuna)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(vac)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(vac.id, 'vacunación', vac.tipo_vacuna)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                        {!canEdit && !canDelete && (
+                          <span className="text-gray-400 text-xs">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -392,20 +405,27 @@ function Health() {
                         {enf.costo ? `$${parseFloat(enf.costo).toFixed(2)}` : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => handleEdit(enf)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(enf.id, 'tratamiento', enf.enfermedad)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(enf)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(enf.id, 'tratamiento', enf.enfermedad)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                        {!canEdit && !canDelete && (
+                          <span className="text-gray-400 text-xs">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}
