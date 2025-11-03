@@ -288,6 +288,99 @@ export const puedeAsignarAnimal = (grupo) => {
   return grupo.activo && grupo.cantidad_actual < grupo.capacidad
 }
 
+// ============================================
+// Gestión de Estados del Grupo (según diagrama UML)
+// ============================================
+
+/**
+ * Confirmar grupo (transición de en_creacion a incompleto/completo)
+ */
+export const confirmarGrupo = async (id) => {
+  try {
+    console.log(`📝 Confirmando grupo ID: ${id}...`)
+    const response = await axios.post(
+      `${API_BASE_URL}/confirmar-grupo`,
+      { id },
+      axiosConfig
+    )
+    
+    if (response.data?.success) {
+      console.log('✅ Grupo confirmado:', response.data.message)
+      if (response.data.notificacion) {
+        console.log(`🔔 Notificación: ${response.data.notificacion}`)
+      }
+      return response.data
+    }
+    
+    throw new Error('Respuesta inválida del servidor')
+  } catch (error) {
+    handleError(error, 'confirmarGrupo')
+  }
+}
+
+/**
+ * Iniciar proceso de salida del grupo
+ */
+export const iniciarSalidaGrupo = async (id) => {
+  try {
+    console.log(`🚪 Iniciando salida de grupo ID: ${id}...`)
+    const response = await axios.post(
+      `${API_BASE_URL}/iniciar-salida-grupo`,
+      { id },
+      axiosConfig
+    )
+    
+    if (response.data?.success) {
+      console.log('✅ Proceso de salida iniciado')
+      return response.data
+    }
+    
+    throw new Error('Respuesta inválida del servidor')
+  } catch (error) {
+    handleError(error, 'iniciarSalidaGrupo')
+  }
+}
+
+/**
+ * Completar salida del grupo (total o parcial)
+ */
+export const completarSalidaGrupo = async (id, tipo = 'total') => {
+  try {
+    console.log(`✅ Completando salida ${tipo} de grupo ID: ${id}...`)
+    const response = await axios.post(
+      `${API_BASE_URL}/completar-salida-grupo`,
+      { id, tipo },
+      axiosConfig
+    )
+    
+    if (response.data?.success) {
+      console.log('✅ Salida completada:', response.data.message)
+      return response.data
+    }
+    
+    throw new Error('Respuesta inválida del servidor')
+  } catch (error) {
+    handleError(error, 'completarSalidaGrupo')
+  }
+}
+
+/**
+ * Obtener el label y color del estado según el diagrama UML
+ */
+export const getEstadoInfo = (estado) => {
+  const estados = {
+    'en_creacion': { label: 'En Creación', color: 'secondary', icon: '📝' },
+    'incompleto': { label: 'Incompleto', color: 'info', icon: '⏳' },
+    'completo': { label: 'Completo', color: 'success', icon: '✅' },
+    'programado_salida': { label: 'Programado para Salida', color: 'warning', icon: '📅' },
+    'en_proceso_salida': { label: 'En Proceso de Salida', color: 'warning', icon: '🚪' },
+    'cerrado': { label: 'Cerrado', color: 'dark', icon: '🔒' },
+    'inactivo': { label: 'Inactivo', color: 'secondary', icon: '❌' },
+  }
+  
+  return estados[estado] || { label: 'Desconocido', color: 'secondary', icon: '❓' }
+}
+
 export default {
   // CRUD Grupos
   getNextCodigoGrupo,
@@ -300,6 +393,11 @@ export default {
   getAnimalesByGrupo,
   asignarAnimalGrupo,
   removerAnimalGrupo,
+  // Gestión de Estados
+  confirmarGrupo,
+  iniciarSalidaGrupo,
+  completarSalidaGrupo,
+  getEstadoInfo,
   // Funciones Auxiliares
   calcularOcupacion,
   getEstadoOcupacion,

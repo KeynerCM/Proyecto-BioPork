@@ -116,11 +116,26 @@ exports.handler = async (event) => {
       RETURNING *
     `
 
-    // Actualizar cantidad_actual del grupo
-    await sql`
+    // Actualizar cantidad_actual del grupo y recalcular estado
+    const nuevaCantidad = grupo[0].cantidad_actual + 1
+    const capacidad = grupo[0].capacidad
+    
+    // Determinar nuevo estado según la lógica del diagrama UML
+    let nuevoEstado = 'incompleto'
+    let notificacion = null
+    
+    if (nuevaCantidad >= capacidad) {
+      nuevoEstado = 'completo'
+      notificacion = 'Capacidad completa alcanzada'
+    }
+
+    const grupoActualizado = await sql`
       UPDATE grupos
-      SET cantidad_actual = cantidad_actual + 1
+      SET 
+        cantidad_actual = ${nuevaCantidad},
+        estado = ${nuevoEstado}
       WHERE id = ${grupo_id}
+      RETURNING *
     `
 
     return {
@@ -129,7 +144,9 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         success: true,
         data: asignacion[0],
+        grupo: grupoActualizado[0],
         message: 'Animal asignado al grupo exitosamente',
+        notificacion,
       }),
     }
   } catch (error) {

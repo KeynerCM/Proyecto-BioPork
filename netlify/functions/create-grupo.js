@@ -65,6 +65,7 @@ exports.handler = async (event) => {
         fecha_salida_programada,
         peso_promedio,
         activo,
+        estado,
         notas
       )
       VALUES (
@@ -78,6 +79,7 @@ exports.handler = async (event) => {
         ${fecha_salida_programada || null},
         0,
         true,
+        'en_creacion',
         ${notas || null}
       )
       RETURNING *

@@ -58,11 +58,48 @@ exports.handler = async (event) => {
       RETURNING *
     `
 
-    // Decrementar cantidad_actual del grupo
-    await sql`
-      UPDATE grupos
-      SET cantidad_actual = GREATEST(cantidad_actual - 1, 0)
+    // Obtener datos del grupo para actualizar estado
+    const grupo = await sql`
+      SELECT cantidad_actual, capacidad, estado FROM grupos
       WHERE id = ${grupo_id}
+    `
+
+    if (grupo.length === 0) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Grupo no encontrado',
+        }),
+      }
+    }
+
+    // Calcular nueva cantidad y estado
+    const nuevaCantidad = Math.max((grupo[0].cantidad_actual || 0) - 1, 0)
+    const capacidad = grupo[0].capacidad
+    
+    // Determinar nuevo estado según la lógica del diagrama UML
+    let nuevoEstado = grupo[0].estado
+    
+    // Si estaba completo y ahora tiene espacio, pasa a incompleto
+    if (grupo[0].estado === 'completo' && nuevaCantidad < capacidad) {
+      nuevoEstado = 'incompleto'
+    }
+    
+    // Si se quedó sin animales, vuelve a en_creacion
+    if (nuevaCantidad === 0 && grupo[0].estado !== 'cerrado') {
+      nuevoEstado = 'en_creacion'
+    }
+
+    // Actualizar cantidad_actual y estado del grupo
+    const grupoActualizado = await sql`
+      UPDATE grupos
+      SET 
+        cantidad_actual = ${nuevaCantidad},
+        estado = ${nuevoEstado}
+      WHERE id = ${grupo_id}
+      RETURNING *
     `
 
     return {
@@ -71,6 +108,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         success: true,
         data: result[0],
+        grupo: grupoActualizado[0],
         message: 'Animal removido del grupo exitosamente',
       }),
     }
