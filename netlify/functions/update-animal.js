@@ -23,7 +23,7 @@ exports.handler = async (event, context) => {
     }
 
     const data = JSON.parse(event.body)
-    const { codigo, tipo, raza, fecha_nacimiento, peso_actual, sexo, estado, grupo_id } = data
+    const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, estado, grupo_id } = data
 
     // Conectar a Neon
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
@@ -34,12 +34,13 @@ exports.handler = async (event, context) => {
       SET 
         codigo = ${codigo},
         tipo = ${tipo},
-        raza = ${raza},
+        raza = ${raza || null},
         fecha_nacimiento = ${fecha_nacimiento},
-        peso_actual = ${peso_actual},
+        peso_inicial = ${peso_inicial || null},
+        peso_actual = ${peso_actual || null},
         sexo = ${sexo},
         estado = ${estado},
-        grupo_id = ${grupo_id}
+        grupo_id = ${grupo_id || null}
       WHERE id = ${id}
       RETURNING *
     `

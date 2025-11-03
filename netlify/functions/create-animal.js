@@ -11,15 +11,15 @@ exports.handler = async (event, context) => {
 
   try {
     const data = JSON.parse(event.body)
-    const { codigo, tipo, raza, fecha_nacimiento, peso_inicial } = data
+    const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, grupo_id } = data
 
     // Validaciones básicas
-    if (!codigo || !tipo || !fecha_nacimiento) {
+    if (!codigo || !tipo || !fecha_nacimiento || !sexo) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           success: false,
-          error: 'Faltan campos requeridos: codigo, tipo, fecha_nacimiento',
+          error: 'Faltan campos requeridos: codigo, tipo, fecha_nacimiento, sexo',
         }),
       }
     }
@@ -28,8 +28,28 @@ exports.handler = async (event, context) => {
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     const result = await sql`
-      INSERT INTO animales (codigo, tipo, raza, fecha_nacimiento, peso_inicial, estado)
-      VALUES (${codigo}, ${tipo}, ${raza}, ${fecha_nacimiento}, ${peso_inicial}, 'activo')
+      INSERT INTO animales (
+        codigo, 
+        tipo, 
+        raza, 
+        fecha_nacimiento, 
+        peso_inicial, 
+        peso_actual,
+        sexo,
+        grupo_id,
+        estado
+      )
+      VALUES (
+        ${codigo}, 
+        ${tipo}, 
+        ${raza}, 
+        ${fecha_nacimiento}, 
+        ${peso_inicial || null}, 
+        ${peso_actual || null},
+        ${sexo},
+        ${grupo_id || null},
+        'activo'
+      )
       RETURNING *
     `
 
