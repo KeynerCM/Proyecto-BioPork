@@ -1,8 +1,17 @@
 ﻿const { neon } = require('@neondatabase/serverless')
 
-exports.handler = async (event, context) => {
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+}
+
+exports.handler = async (event) => {
   if (event.httpMethod !== 'PUT') {
-    return { statusCode: 405, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Method not allowed' }) }
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ success: false, error: 'Method not allowed' }),
+    }
   }
 
   try {
@@ -27,10 +36,22 @@ exports.handler = async (event, context) => {
       RETURNING *
     `
 
-    return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true, data: result[0] }) }
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ success: true, data: result[0] }),
+    }
   } catch (error) {
     console.error('Error updating enfermedad:', error)
-    return { statusCode: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: error.message }) }
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: 'Error al actualizar enfermedad',
+        message: error.message,
+      }),
+    }
   }
 }
 

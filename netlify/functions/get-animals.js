@@ -1,18 +1,22 @@
 const { neon } = require('@neondatabase/serverless')
 
-exports.handler = async (event, context) => {
-  // Solo permitir métodos GET
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+}
+
+exports.handler = async (event) => {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
+      headers,
+      body: JSON.stringify({ success: false, error: 'Method not allowed' }),
     }
   }
 
   try {
-    // Conectar a Neon usando la variable de entorno
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
-    
+
     const result = await sql`
       SELECT 
         id,
@@ -31,19 +35,14 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify({
-        success: true,
-        data: result,
-      }),
+      headers,
+      body: JSON.stringify({ success: true, data: result }),
     }
   } catch (error) {
     console.error('Error:', error)
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: 'Error al obtener animales',

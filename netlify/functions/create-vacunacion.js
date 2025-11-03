@@ -1,10 +1,16 @@
 const { neon } = require('@neondatabase/serverless')
 
-exports.handler = async (event, context) => {
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+}
+
+exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' })
+      headers,
+      body: JSON.stringify({ success: false, error: 'Method not allowed' }),
     }
   }
 
@@ -37,21 +43,19 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 201,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ success: true, data: result[0] })
+      headers,
+      body: JSON.stringify({ success: true, data: result[0] }),
     }
   } catch (error) {
     console.error('Error creating vacunacion:', error)
     return {
       statusCode: 500,
-      body: JSON.stringify({ 
+      headers,
+      body: JSON.stringify({
         success: false,
         error: 'Error al crear vacunación',
-        message: error.message 
-      })
+        message: error.message,
+      }),
     }
   }
 }
