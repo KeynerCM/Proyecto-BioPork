@@ -44,4 +44,7 @@ export const animalService = {
   },
 }
 
+// Export adicional para compatibilidad con otros componentes
+export const getAnimals = animalService.getAll
+
 export default animalService
