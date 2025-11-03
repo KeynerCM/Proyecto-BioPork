@@ -57,11 +57,16 @@ function Health({ user }) {
         animalService.getAll()
       ])
       
+      if (!vacResponse.success || !enfResponse.success || !animResponse.success) {
+        throw new Error('Error al obtener datos del servidor')
+      }
+      
       setVacunaciones(vacResponse.data || [])
       setEnfermedades(enfResponse.data || [])
       setAnimales(animResponse.data || [])
     } catch (error) {
-      showToast('Error al cargar los datos', 'error')
+      console.error('Error loading health data:', error)
+      showToast(error.response?.data?.error || 'Error al cargar los datos', 'error')
     } finally {
       setLoading(false)
     }
@@ -80,49 +85,61 @@ function Health({ user }) {
           animal_id: parseInt(formData.animal_id),
           tipo_vacuna: formData.tipo_vacuna,
           fecha_aplicacion: formData.fecha_aplicacion,
-          dosis: formData.dosis,
-          lote_vacuna: formData.lote_vacuna,
+          dosis: formData.dosis || null,
+          lote_vacuna: formData.lote_vacuna || null,
           proxima_fecha: formData.proxima_fecha || null,
-          veterinario: formData.veterinario,
-          notas: formData.notas,
+          veterinario: formData.veterinario || null,
+          notas: formData.notas || null,
         }
 
+        let response
         if (editingItem) {
-          await vacunacionService.update({ ...vacData, id: editingItem.id })
+          response = await vacunacionService.update({ ...vacData, id: editingItem.id })
           showToast('Vacunación actualizada exitosamente', 'success')
         } else {
-          await vacunacionService.create(vacData)
+          response = await vacunacionService.create(vacData)
           showToast('Vacunación registrada exitosamente', 'success')
+        }
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Error al guardar')
         }
       } else {
         const enfData = {
           animal_id: parseInt(formData.animal_id),
           enfermedad: formData.enfermedad,
-          sintomas: formData.sintomas,
+          sintomas: formData.sintomas || null,
           fecha_inicio: formData.fecha_inicio,
-          tratamiento: formData.tratamiento,
-          medicamento: formData.medicamento,
-          dosis: formData.dosis,
+          tratamiento: formData.tratamiento || null,
+          medicamento: formData.medicamento || null,
+          dosis: formData.dosis || null,
           estado: formData.estado,
           fecha_recuperacion: formData.fecha_recuperacion || null,
-          veterinario: formData.veterinario,
+          veterinario: formData.veterinario || null,
           costo: formData.costo ? parseFloat(formData.costo) : null,
-          notas: formData.notas,
+          notas: formData.notas || null,
         }
 
+        let response
         if (editingItem) {
-          await enfermedadService.update({ ...enfData, id: editingItem.id })
+          response = await enfermedadService.update({ ...enfData, id: editingItem.id })
           showToast('Tratamiento actualizado exitosamente', 'success')
         } else {
-          await enfermedadService.create(enfData)
+          response = await enfermedadService.create(enfData)
           showToast('Tratamiento registrado exitosamente', 'success')
+        }
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Error al guardar')
         }
       }
 
       closeModal()
-      loadData()
+      await loadData()
     } catch (error) {
-      showToast('Error al guardar el registro', 'error')
+      console.error('Error submitting health form:', error)
+      const errorMessage = error.response?.data?.error || error.message || 'Error al guardar el registro'
+      showToast(errorMessage, 'error')
     }
   }
 
@@ -166,16 +183,28 @@ function Health({ user }) {
       message: `¿Estás seguro de que deseas eliminar este registro de ${nombre}? Esta acción no se puede deshacer.`,
       onConfirm: async () => {
         try {
+          let response
           if (activeTab === 'vacunaciones') {
-            await vacunacionService.delete(id)
-            showToast('Vacunación eliminada exitosamente', 'success')
+            response = await vacunacionService.delete(id)
+            if (response.success) {
+              showToast('Vacunación eliminada exitosamente', 'success')
+            }
           } else {
-            await enfermedadService.delete(id)
-            showToast('Tratamiento eliminado exitosamente', 'success')
+            response = await enfermedadService.delete(id)
+            if (response.success) {
+              showToast('Tratamiento eliminado exitosamente', 'success')
+            }
           }
-          loadData()
+          
+          if (!response.success) {
+            throw new Error(response.error || 'Error al eliminar')
+          }
+          
+          await loadData()
         } catch (error) {
-          showToast('Error al eliminar el registro', 'error')
+          console.error('Error deleting health record:', error)
+          const errorMessage = error.response?.data?.error || error.message || 'Error al eliminar el registro'
+          showToast(errorMessage, 'error')
         }
         setConfirmDialog(null)
       },
@@ -451,19 +480,26 @@ function Health({ user }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Animal <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={formData.animal_id}
-                    onChange={(e) => setFormData({ ...formData, animal_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    required
-                  >
-                    <option value="">Seleccionar animal</option>
-                    {animales.map((animal) => (
-                      <option key={animal.id} value={animal.id}>
-                        {animal.codigo} - {animal.raza} ({animal.tipo})
-                      </option>
-                    ))}
-                  </select>
+                  {animales.length === 0 ? (
+                    <div className="w-full px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-yellow-800 text-sm flex items-center">
+                      <AlertCircle size={16} className="mr-2" />
+                      No hay animales registrados. Por favor, registra un animal primero.
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.animal_id}
+                      onChange={(e) => setFormData({ ...formData, animal_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      required
+                    >
+                      <option value="">Seleccionar animal</option>
+                      {animales.map((animal) => (
+                        <option key={animal.id} value={animal.id}>
+                          {animal.codigo} - {animal.raza} ({animal.tipo})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 {/* Formulario de Vacunación */}
@@ -490,6 +526,7 @@ function Health({ user }) {
                           type="date"
                           value={formData.fecha_aplicacion}
                           onChange={(e) => setFormData({ ...formData, fecha_aplicacion: e.target.value })}
+                          max={new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />
@@ -556,6 +593,7 @@ function Health({ user }) {
                           type="date"
                           value={formData.fecha_inicio}
                           onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
+                          max={new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />
@@ -669,7 +707,9 @@ function Health({ user }) {
                   <Button type="button" variant="secondary" onClick={closeModal}>
                     Cancelar
                   </Button>
-                  <Button type="submit">{editingItem ? 'Actualizar' : 'Registrar'}</Button>
+                  <Button type="submit" disabled={animales.length === 0}>
+                    {editingItem ? 'Actualizar' : 'Registrar'}
+                  </Button>
                 </div>
               </form>
             </div>
