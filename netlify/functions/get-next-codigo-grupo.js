@@ -36,7 +36,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, codigo: nextCodigo }),
+      body: JSON.stringify({ 
+        success: true, 
+        data: { next_codigo: nextCodigo } 
+      }),
     }
   } catch (error) {
     console.error('Error:', error)
