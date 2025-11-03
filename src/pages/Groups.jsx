@@ -246,12 +246,14 @@ const Groups = () => {
   // ============================================
   // Funciones auxiliares
   // ============================================
-  const gruposFiltrados = grupos.filter((g) => {
+  // Funciones auxiliares
+  // ============================================
+  const gruposFiltrados = (grupos || []).filter((g) => {
     if (filtroTipo === 'todos') return true
     return g.tipo === filtroTipo
   })
 
-  const animalesDisponibles = animales.filter((a) => {
+  const animalesDisponibles = (animales || []).filter((a) => {
     // Solo mostrar animales del mismo tipo que el grupo y que no estén asignados
     if (!grupoSeleccionado) return false
     if (a.tipo !== grupoSeleccionado.tipo) return false

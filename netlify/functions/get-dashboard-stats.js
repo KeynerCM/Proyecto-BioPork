@@ -21,11 +21,11 @@ exports.handler = async (event) => {
     const animalesStats = await sql`
       SELECT
         COUNT(*) as total_animales,
-        COUNT(*) FILTER (WHERE estado = 'activo') as animales_activos,
-        COUNT(*) FILTER (WHERE tipo = 'engorde') as animales_engorde,
-        COUNT(*) FILTER (WHERE tipo = 'reproduccion') as animales_reproduccion,
-        COUNT(*) FILTER (WHERE sexo = 'hembra' AND tipo = 'reproduccion') as cerdas_reproductoras,
-        AVG(peso_actual) FILTER (WHERE peso_actual IS NOT NULL) as peso_promedio
+        COUNT(CASE WHEN estado = 'activo' THEN 1 END) as animales_activos,
+        COUNT(CASE WHEN tipo = 'engorde' THEN 1 END) as animales_engorde,
+        COUNT(CASE WHEN tipo = 'reproduccion' THEN 1 END) as animales_reproduccion,
+        COUNT(CASE WHEN sexo = 'hembra' AND tipo = 'reproduccion' THEN 1 END) as cerdas_reproductoras,
+        AVG(CASE WHEN peso_actual IS NOT NULL THEN peso_actual END) as peso_promedio
       FROM animales
     `
 
@@ -33,43 +33,49 @@ exports.handler = async (event) => {
     const gruposStats = await sql`
       SELECT
         COUNT(*) as total_grupos,
-        COUNT(*) FILTER (WHERE activo = true) as grupos_activos,
-        SUM(cantidad_actual) as total_animales_en_grupos,
-        SUM(capacidad) as capacidad_total,
+        COUNT(CASE WHEN activo = true THEN 1 END) as grupos_activos,
+        COALESCE(SUM(cantidad_actual), 0) as total_animales_en_grupos,
+        COALESCE(SUM(capacidad), 0) as capacidad_total,
         AVG(CASE WHEN capacidad > 0 THEN (cantidad_actual::float / capacidad * 100) ELSE 0 END) as ocupacion_promedio
       FROM grupos
     `
 
     // Obtener estadísticas de salud (últimos 30 días)
-    const saludStats = await sql`
-      SELECT
-        COUNT(DISTINCT v.id) as vacunaciones_mes,
-        COUNT(DISTINCT e.id) as enfermedades_mes,
-        COUNT(DISTINCT e.id) FILTER (WHERE e.estado = 'en_tratamiento') as tratamientos_activos
-      FROM (
-        SELECT id FROM vacunaciones 
-        WHERE fecha_aplicacion >= CURRENT_DATE - INTERVAL '30 days'
-      ) v
-      FULL OUTER JOIN (
-        SELECT id, estado FROM enfermedades 
-        WHERE fecha_deteccion >= CURRENT_DATE - INTERVAL '30 days'
-      ) e ON false
+    const vacunacionesMes = await sql`
+      SELECT COUNT(*) as vacunaciones_mes
+      FROM vacunaciones 
+      WHERE fecha_aplicacion >= CURRENT_DATE - INTERVAL '30 days'
+    `
+    
+    const enfermedadesMes = await sql`
+      SELECT COUNT(*) as enfermedades_mes
+      FROM enfermedades 
+      WHERE fecha_deteccion >= CURRENT_DATE - INTERVAL '30 days'
+    `
+    
+    const tratamientosActivos = await sql`
+      SELECT COUNT(*) as tratamientos_activos
+      FROM enfermedades 
+      WHERE estado = 'en_tratamiento'
     `
 
-    // Obtener estadísticas de reproducción (últimos 30 días)
-    const reproduccionStats = await sql`
-      SELECT
-        COUNT(DISTINCT cr.id) as ciclos_activos,
-        COUNT(DISTINCT p.id) as partos_mes,
-        SUM(p.lechones_nacidos_vivos) FILTER (WHERE p.fecha_parto >= CURRENT_DATE - INTERVAL '30 days') as lechones_nacidos_mes
-      FROM (
-        SELECT id FROM ciclos_reproductivos 
-        WHERE estado = 'activo'
-      ) cr
-      FULL OUTER JOIN (
-        SELECT id, fecha_parto, lechones_nacidos_vivos FROM partos 
-        WHERE fecha_parto >= CURRENT_DATE - INTERVAL '30 days'
-      ) p ON false
+    // Obtener estadísticas de reproducción
+    const ciclosActivos = await sql`
+      SELECT COUNT(*) as ciclos_activos
+      FROM ciclos_reproductivos 
+      WHERE estado = 'activo'
+    `
+    
+    const partosMes = await sql`
+      SELECT COUNT(*) as partos_mes
+      FROM partos 
+      WHERE fecha_parto >= CURRENT_DATE - INTERVAL '30 days'
+    `
+    
+    const lechonesNacidos = await sql`
+      SELECT COALESCE(SUM(lechones_nacidos_vivos), 0) as lechones_nacidos_mes
+      FROM partos 
+      WHERE fecha_parto >= CURRENT_DATE - INTERVAL '30 days'
     `
 
     // Próximos partos (próximos 7 días)
@@ -104,14 +110,14 @@ exports.handler = async (event) => {
         ocupacion_promedio: parseFloat(gruposStats[0]?.ocupacion_promedio || 0).toFixed(1),
       },
       salud: {
-        vacunaciones_mes: parseInt(saludStats[0]?.vacunaciones_mes || 0),
-        enfermedades_mes: parseInt(saludStats[0]?.enfermedades_mes || 0),
-        tratamientos_activos: parseInt(saludStats[0]?.tratamientos_activos || 0),
+        vacunaciones_mes: parseInt(vacunacionesMes[0]?.vacunaciones_mes || 0),
+        enfermedades_mes: parseInt(enfermedadesMes[0]?.enfermedades_mes || 0),
+        tratamientos_activos: parseInt(tratamientosActivos[0]?.tratamientos_activos || 0),
       },
       reproduccion: {
-        ciclos_activos: parseInt(reproduccionStats[0]?.ciclos_activos || 0),
-        partos_mes: parseInt(reproduccionStats[0]?.partos_mes || 0),
-        lechones_nacidos_mes: parseInt(reproduccionStats[0]?.lechones_nacidos_mes || 0),
+        ciclos_activos: parseInt(ciclosActivos[0]?.ciclos_activos || 0),
+        partos_mes: parseInt(partosMes[0]?.partos_mes || 0),
+        lechones_nacidos_mes: parseInt(lechonesNacidos[0]?.lechones_nacidos_mes || 0),
       },
       alertas: {
         partos_proximos: parseInt(proximosPartos[0]?.partos_proximos || 0),

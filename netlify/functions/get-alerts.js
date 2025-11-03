@@ -20,94 +20,114 @@ exports.handler = async (event) => {
     const alertas = []
 
     // 1. Partos próximos (próximos 7 días)
-    const partosProximos = await sql`
-      SELECT 
-        'parto' as tipo,
-        'warning' as severidad,
-        'Parto próximo' as titulo,
-        'Cerda ' || a.codigo || ' tiene parto estimado para ' || TO_CHAR(cr.fecha_parto_estimada, 'DD/MM/YYYY') as mensaje,
-        cr.fecha_parto_estimada as fecha,
-        a.id as animal_id,
-        cr.id as relacionado_id
-      FROM ciclos_reproductivos cr
-      JOIN animales a ON cr.cerda_id = a.id
-      WHERE cr.estado = 'activo'
-      AND cr.fecha_parto_estimada BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
-      ORDER BY cr.fecha_parto_estimada ASC
-    `
-    alertas.push(...partosProximos)
+    try {
+      const partosProximos = await sql`
+        SELECT 
+          'parto' as tipo,
+          'warning' as severidad,
+          'Parto próximo' as titulo,
+          'Cerda ' || a.codigo || ' tiene parto estimado para el ' || TO_CHAR(cr.fecha_parto_estimada, 'DD/MM/YYYY') as mensaje,
+          cr.fecha_parto_estimada as fecha,
+          a.id as animal_id,
+          cr.id as relacionado_id
+        FROM ciclos_reproductivos cr
+        JOIN animales a ON cr.cerda_id = a.id
+        WHERE cr.estado = 'activo'
+        AND cr.fecha_parto_estimada BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+        ORDER BY cr.fecha_parto_estimada ASC
+      `
+      alertas.push(...partosProximos)
+    } catch (e) {
+      console.log('Error en partos próximos:', e.message)
+    }
 
     // 2. Vacunaciones pendientes (próximos 7 días)
-    const vacunacionesPendientes = await sql`
-      SELECT 
-        'vacunacion' as tipo,
-        'info' as severidad,
-        'Vacunación próxima' as titulo,
-        'Animal ' || a.codigo || ' requiere ' || v.vacuna || ' el ' || TO_CHAR(v.fecha_proxima_dosis, 'DD/MM/YYYY') as mensaje,
-        v.fecha_proxima_dosis as fecha,
-        a.id as animal_id,
-        v.id as relacionado_id
-      FROM vacunaciones v
-      JOIN animales a ON v.animal_id = a.id
-      WHERE v.fecha_proxima_dosis BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
-      ORDER BY v.fecha_proxima_dosis ASC
-    `
-    alertas.push(...vacunacionesPendientes)
+    try {
+      const vacunacionesPendientes = await sql`
+        SELECT 
+          'vacunacion' as tipo,
+          'info' as severidad,
+          'Vacunación próxima' as titulo,
+          'Animal ' || a.codigo || ' requiere ' || v.vacuna || ' el ' || TO_CHAR(v.fecha_proxima_dosis, 'DD/MM/YYYY') as mensaje,
+          v.fecha_proxima_dosis as fecha,
+          a.id as animal_id,
+          v.id as relacionado_id
+        FROM vacunaciones v
+        JOIN animales a ON v.animal_id = a.id
+        WHERE v.fecha_proxima_dosis BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+        ORDER BY v.fecha_proxima_dosis ASC
+      `
+      alertas.push(...vacunacionesPendientes)
+    } catch (e) {
+      console.log('Error en vacunaciones pendientes:', e.message)
+    }
 
     // 3. Tratamientos activos que requieren atención
-    const tratamientosActivos = await sql`
-      SELECT 
-        'tratamiento' as tipo,
-        'danger' as severidad,
-        'Tratamiento en curso' as titulo,
-        'Animal ' || a.codigo || ' - ' || e.nombre || ' (' || e.estado || ')' as mensaje,
-        e.fecha_deteccion as fecha,
-        a.id as animal_id,
-        e.id as relacionado_id
-      FROM enfermedades e
-      JOIN animales a ON e.animal_id = a.id
-      WHERE e.estado = 'en_tratamiento'
-      ORDER BY e.fecha_deteccion DESC
-      LIMIT 5
-    `
-    alertas.push(...tratamientosActivos)
+    try {
+      const tratamientosActivos = await sql`
+        SELECT 
+          'tratamiento' as tipo,
+          'danger' as severidad,
+          'Tratamiento en curso' as titulo,
+          'Animal ' || a.codigo || ' - ' || e.nombre || ' (' || e.estado || ')' as mensaje,
+          e.fecha_deteccion as fecha,
+          a.id as animal_id,
+          e.id as relacionado_id
+        FROM enfermedades e
+        JOIN animales a ON e.animal_id = a.id
+        WHERE e.estado = 'en_tratamiento'
+        ORDER BY e.fecha_deteccion DESC
+        LIMIT 5
+      `
+      alertas.push(...tratamientosActivos)
+    } catch (e) {
+      console.log('Error en tratamientos activos:', e.message)
+    }
 
     // 4. Grupos cercanos a capacidad máxima (>= 90%)
-    const gruposLlenos = await sql`
-      SELECT 
-        'grupo' as tipo,
-        'warning' as severidad,
-        'Grupo casi lleno' as titulo,
-        'Grupo ' || codigo || ' al ' || ROUND((cantidad_actual::float / capacidad * 100), 0) || '% de capacidad (' || cantidad_actual || '/' || capacidad || ')' as mensaje,
-        fecha_creacion as fecha,
-        null as animal_id,
-        id as relacionado_id
-      FROM grupos
-      WHERE activo = true
-      AND capacidad > 0
-      AND (cantidad_actual::float / capacidad) >= 0.9
-      ORDER BY (cantidad_actual::float / capacidad) DESC
-    `
-    alertas.push(...gruposLlenos)
+    try {
+      const gruposLlenos = await sql`
+        SELECT 
+          'grupo' as tipo,
+          'warning' as severidad,
+          'Grupo casi lleno' as titulo,
+          'Grupo ' || codigo || ' al ' || ROUND((cantidad_actual::float / NULLIF(capacidad, 0) * 100), 0) || '% de capacidad (' || cantidad_actual || '/' || capacidad || ')' as mensaje,
+          fecha_creacion as fecha,
+          NULL as animal_id,
+          id as relacionado_id
+        FROM grupos
+        WHERE activo = true
+        AND capacidad > 0
+        AND (cantidad_actual::float / capacidad) >= 0.9
+        ORDER BY (cantidad_actual::float / capacidad) DESC
+      `
+      alertas.push(...gruposLlenos)
+    } catch (e) {
+      console.log('Error en grupos llenos:', e.message)
+    }
 
     // 5. Ciclos reproductivos que llevan mucho tiempo activos (>150 días)
-    const ciclosLargos = await sql`
-      SELECT 
-        'reproduccion' as tipo,
-        'info' as severidad,
-        'Ciclo reproductivo prolongado' as titulo,
-        'Cerda ' || a.codigo || ' lleva ' || (CURRENT_DATE - cr.fecha_servicio) || ' días en ciclo' as mensaje,
-        cr.fecha_servicio as fecha,
-        a.id as animal_id,
-        cr.id as relacionado_id
-      FROM ciclos_reproductivos cr
-      JOIN animales a ON cr.cerda_id = a.id
-      WHERE cr.estado = 'activo'
-      AND (CURRENT_DATE - cr.fecha_servicio) > 150
-      ORDER BY cr.fecha_servicio ASC
-      LIMIT 3
-    `
-    alertas.push(...ciclosLargos)
+    try {
+      const ciclosLargos = await sql`
+        SELECT 
+          'reproduccion' as tipo,
+          'info' as severidad,
+          'Ciclo reproductivo prolongado' as titulo,
+          'Cerda ' || a.codigo || ' lleva ' || (CURRENT_DATE - cr.fecha_servicio) || ' días en ciclo' as mensaje,
+          cr.fecha_servicio as fecha,
+          a.id as animal_id,
+          cr.id as relacionado_id
+        FROM ciclos_reproductivos cr
+        JOIN animales a ON cr.cerda_id = a.id
+        WHERE cr.estado = 'activo'
+        AND (CURRENT_DATE - cr.fecha_servicio) > 150
+        ORDER BY cr.fecha_servicio ASC
+        LIMIT 3
+      `
+      alertas.push(...ciclosLargos)
+    } catch (e) {
+      console.log('Error en ciclos largos:', e.message)
+    }
 
     // Ordenar alertas por severidad y fecha
     const ordenSeveridad = { danger: 1, warning: 2, info: 3 }
