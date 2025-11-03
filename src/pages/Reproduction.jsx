@@ -56,11 +56,16 @@ function Reproduction({ user }) {
         animalService.getAll()
       ])
       
+      if (!ciclosResponse.success || !partosResponse.success || !animResponse.success) {
+        throw new Error('Error al obtener datos del servidor')
+      }
+      
       setCiclos(ciclosResponse.data || [])
       setPartos(partosResponse.data || [])
       setAnimales(animResponse.data || [])
     } catch (error) {
-      showToast('Error al cargar los datos', 'error')
+      console.error('Error loading reproduction data:', error)
+      showToast(error.response?.data?.error || 'Error al cargar los datos', 'error')
     } finally {
       setLoading(false)
     }
@@ -79,46 +84,58 @@ function Reproduction({ user }) {
           cerda_id: parseInt(formData.cerda_id),
           fecha_celo: formData.fecha_celo,
           fecha_monta: formData.fecha_monta || null,
-          tipo_monta: formData.tipo_monta,
-          verraco: formData.verraco,
+          tipo_monta: formData.tipo_monta || null,
+          verraco: formData.verraco || null,
           estado: formData.estado,
-          notas: formData.notas,
+          notas: formData.notas || null,
         }
 
+        let response
         if (editingItem) {
-          await cicloReproductivoService.update({ ...cicloData, id: editingItem.id })
+          response = await cicloReproductivoService.update({ ...cicloData, id: editingItem.id })
           showToast('Ciclo reproductivo actualizado exitosamente', 'success')
         } else {
-          await cicloReproductivoService.create(cicloData)
+          response = await cicloReproductivoService.create(cicloData)
           showToast('Ciclo reproductivo registrado exitosamente', 'success')
+        }
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Error al guardar')
         }
       } else {
         const partoData = {
           cerda_id: parseInt(formData.cerda_id),
           ciclo_id: formData.ciclo_id ? parseInt(formData.ciclo_id) : null,
           fecha_parto: formData.fecha_parto,
-          lechones_nacidos: parseInt(formData.lechones_nacidos),
-          lechones_vivos: parseInt(formData.lechones_vivos),
+          lechones_nacidos: parseInt(formData.lechones_nacidos) || 0,
+          lechones_vivos: parseInt(formData.lechones_vivos) || 0,
           peso_promedio: formData.peso_promedio ? parseFloat(formData.peso_promedio) : null,
           dificultad: formData.dificultad,
-          estado_cerda: formData.estado_cerda,
-          observaciones: formData.observaciones,
-          veterinario: formData.veterinario,
+          estado_cerda: formData.estado_cerda || null,
+          observaciones: formData.observaciones || null,
+          veterinario: formData.veterinario || null,
         }
 
+        let response
         if (editingItem) {
-          await partoService.update({ ...partoData, id: editingItem.id })
+          response = await partoService.update({ ...partoData, id: editingItem.id })
           showToast('Parto actualizado exitosamente', 'success')
         } else {
-          await partoService.create(partoData)
+          response = await partoService.create(partoData)
           showToast('Parto registrado exitosamente', 'success')
+        }
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Error al guardar')
         }
       }
 
       closeModal()
-      loadData()
+      await loadData()
     } catch (error) {
-      showToast('Error al guardar el registro', 'error')
+      console.error('Error submitting reproduction form:', error)
+      const errorMessage = error.response?.data?.error || error.message || 'Error al guardar el registro'
+      showToast(errorMessage, 'error')
     }
   }
 
@@ -159,16 +176,28 @@ function Reproduction({ user }) {
       message: `¿Estás seguro de que deseas eliminar este registro de ${nombre}? Esta acción no se puede deshacer.`,
       onConfirm: async () => {
         try {
+          let response
           if (activeTab === 'ciclos') {
-            await cicloReproductivoService.delete(id)
-            showToast('Ciclo reproductivo eliminado exitosamente', 'success')
+            response = await cicloReproductivoService.delete(id)
+            if (response.success) {
+              showToast('Ciclo reproductivo eliminado exitosamente', 'success')
+            }
           } else {
-            await partoService.delete(id)
-            showToast('Parto eliminado exitosamente', 'success')
+            response = await partoService.delete(id)
+            if (response.success) {
+              showToast('Parto eliminado exitosamente', 'success')
+            }
           }
-          loadData()
+          
+          if (!response.success) {
+            throw new Error(response.error || 'Error al eliminar')
+          }
+          
+          await loadData()
         } catch (error) {
-          showToast('Error al eliminar el registro', 'error')
+          console.error('Error deleting reproduction record:', error)
+          const errorMessage = error.response?.data?.error || error.message || 'Error al eliminar el registro'
+          showToast(errorMessage, 'error')
         }
         setConfirmDialog(null)
       },
@@ -500,23 +529,25 @@ function Reproduction({ user }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Cerda <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={formData.cerda_id}
-                    onChange={(e) => setFormData({ ...formData, cerda_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    required
-                  >
-                    <option value="">Seleccionar cerda</option>
-                    {cerdas.map((cerda) => (
-                      <option key={cerda.id} value={cerda.id}>
-                        {cerda.codigo} - {cerda.raza}
-                      </option>
-                    ))}
-                  </select>
-                  {cerdas.length === 0 && (
-                    <p className="text-sm text-orange-600 mt-1">
-                      ⚠️ No hay cerdas disponibles. Asegúrate de tener animales hembra tipo reproducción.
-                    </p>
+                  {cerdas.length === 0 ? (
+                    <div className="w-full px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-yellow-800 text-sm flex items-center">
+                      <AlertCircle size={16} className="mr-2" />
+                      No hay cerdas disponibles. Asegúrate de tener animales hembra tipo reproducción registrados.
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.cerda_id}
+                      onChange={(e) => setFormData({ ...formData, cerda_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      required
+                    >
+                      <option value="">Seleccionar cerda</option>
+                      {cerdas.map((cerda) => (
+                        <option key={cerda.id} value={cerda.id}>
+                          {cerda.codigo} - {cerda.raza}
+                        </option>
+                      ))}
+                    </select>
                   )}
                 </div>
 
@@ -532,6 +563,7 @@ function Reproduction({ user }) {
                           type="date"
                           value={formData.fecha_celo}
                           onChange={(e) => setFormData({ ...formData, fecha_celo: e.target.value })}
+                          max={new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />
@@ -544,6 +576,7 @@ function Reproduction({ user }) {
                           type="date"
                           value={formData.fecha_monta}
                           onChange={(e) => setFormData({ ...formData, fecha_monta: e.target.value })}
+                          max={new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                         <p className="text-xs text-gray-500 mt-1">
@@ -640,6 +673,7 @@ function Reproduction({ user }) {
                         type="date"
                         value={formData.fecha_parto}
                         onChange={(e) => setFormData({ ...formData, fecha_parto: e.target.value })}
+                        max={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       />
@@ -754,7 +788,9 @@ function Reproduction({ user }) {
                   <Button type="button" variant="secondary" onClick={closeModal}>
                     Cancelar
                   </Button>
-                  <Button type="submit">{editingItem ? 'Actualizar' : 'Registrar'}</Button>
+                  <Button type="submit" disabled={cerdas.length === 0}>
+                    {editingItem ? 'Actualizar' : 'Registrar'}
+                  </Button>
                 </div>
               </form>
             </div>
