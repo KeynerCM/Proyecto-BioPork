@@ -46,7 +46,3 @@ exports.handler = async (event) => {
     }
   }
 }
-
-export const config = {
-  path: '/api/get-vacunaciones'
-}

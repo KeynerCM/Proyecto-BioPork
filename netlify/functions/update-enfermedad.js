@@ -55,8 +55,4 @@ exports.handler = async (event) => {
   }
 }
 
-export const config = {
-  path: '/api/update-enfermedad'
-}
-
 
