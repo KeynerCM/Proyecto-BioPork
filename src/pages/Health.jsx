@@ -57,9 +57,20 @@ function Health({ user }) {
         animalService.getAll()
       ])
       
+      console.log('🔍 DEBUG Health - Respuestas recibidas:')
+      console.log('Vacunaciones:', vacResponse)
+      console.log('Enfermedades:', enfResponse)
+      console.log('Animales:', animResponse)
+      
       if (!vacResponse.success || !enfResponse.success || !animResponse.success) {
+        console.error('❌ Alguna respuesta no fue exitosa')
         throw new Error('Error al obtener datos del servidor')
       }
+      
+      console.log('✅ Datos a establecer:')
+      console.log('- Vacunaciones:', vacResponse.data?.length || 0, 'registros')
+      console.log('- Enfermedades:', enfResponse.data?.length || 0, 'registros')
+      console.log('- Animales:', animResponse.data?.length || 0, 'registros')
       
       setVacunaciones(vacResponse.data || [])
       setEnfermedades(enfResponse.data || [])

@@ -56,9 +56,21 @@ function Reproduction({ user }) {
         animalService.getAll()
       ])
       
+      console.log('🔍 DEBUG Reproduction - Respuestas recibidas:')
+      console.log('Ciclos:', ciclosResponse)
+      console.log('Partos:', partosResponse)
+      console.log('Animales:', animResponse)
+      
       if (!ciclosResponse.success || !partosResponse.success || !animResponse.success) {
+        console.error('❌ Alguna respuesta no fue exitosa')
         throw new Error('Error al obtener datos del servidor')
       }
+      
+      console.log('✅ Datos a establecer:')
+      console.log('- Ciclos:', ciclosResponse.data?.length || 0, 'registros')
+      console.log('- Partos:', partosResponse.data?.length || 0, 'registros')
+      console.log('- Animales:', animResponse.data?.length || 0, 'registros')
+      console.log('- Animales detalle:', animResponse.data)
       
       setCiclos(ciclosResponse.data || [])
       setPartos(partosResponse.data || [])
@@ -275,6 +287,11 @@ function Reproduction({ user }) {
 
   // Filtrar solo cerdas hembras tipo reproducción
   const cerdas = animales.filter(a => a.sexo === 'hembra' && a.tipo === 'reproduccion')
+  
+  console.log('🐷 Filtrado de cerdas:')
+  console.log('- Total animales:', animales.length)
+  console.log('- Cerdas filtradas:', cerdas.length)
+  console.log('- Detalle animales:', animales.map(a => ({ id: a.id, codigo: a.codigo, sexo: a.sexo, tipo: a.tipo })))
 
   if (loading) {
     return (
