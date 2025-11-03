@@ -1,15 +1,15 @@
-import { neon } from '@neondatabase/serverless'
+const { neon } = require('@neondatabase/serverless')
 
-export default async (req, context) => {
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    })
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    }
   }
 
   try {
-    const data = await req.json()
+    const data = JSON.parse(event.body)
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
     const result = await sql`
@@ -43,19 +43,23 @@ export default async (req, context) => {
       RETURNING *
     `
 
-    return new Response(JSON.stringify({ success: true, data: result[0] }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return {
+      statusCode: 201,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: true, data: result[0] })
+    }
   } catch (error) {
     console.error('Error creating enfermedad:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        success: false,
+        error: 'Error al crear enfermedad',
+        message: error.message 
+      })
+    }
   }
-}
-
-export const config = {
-  path: '/api/create-enfermedad'
 }

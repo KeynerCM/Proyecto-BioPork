@@ -1,11 +1,11 @@
-import { neon } from '@neondatabase/serverless'
+const { neon } = require('@neondatabase/serverless')
 
-export default async (req, context) => {
-  if (req.method !== 'GET') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    })
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'GET') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    }
   }
 
   try {
@@ -22,16 +22,24 @@ export default async (req, context) => {
       ORDER BY v.fecha_aplicacion DESC
     `
 
-    return new Response(JSON.stringify({ success: true, data: vacunaciones }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: true, data: vacunaciones })
+    }
   } catch (error) {
     console.error('Error fetching vacunaciones:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        success: false,
+        error: 'Error al obtener vacunaciones',
+        message: error.message 
+      })
+    }
   }
 }
 
