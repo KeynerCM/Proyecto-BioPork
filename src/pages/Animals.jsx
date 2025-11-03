@@ -45,10 +45,8 @@ function Animals({ user }) {
   const loadAnimals = async () => {
     try {
       setLoading(true)
-      const response = await animalService.getAll()
-      if (response.success) {
-        setAnimals(response.data)
-      }
+      const data = await animalService.getAll()
+      setAnimals(data || [])
     } catch (error) {
       console.error('Error al cargar animales:', error)
       showToast('Error al cargar los animales', 'error')
@@ -70,20 +68,16 @@ function Animals({ user }) {
     try {
       if (editingAnimal) {
         // Actualizar
-        const response = await animalService.update(editingAnimal.id, formData)
-        if (response.success) {
-          showToast(`Animal ${formData.codigo} actualizado exitosamente`, 'success')
-          loadAnimals()
-          closeModal()
-        }
+        await animalService.update(editingAnimal.id, formData)
+        showToast(`Animal ${formData.codigo} actualizado exitosamente`, 'success')
+        loadAnimals()
+        closeModal()
       } else {
         // Crear nuevo
-        const response = await animalService.create(formData)
-        if (response.success) {
-          showToast(`Animal ${formData.codigo} registrado exitosamente`, 'success')
-          loadAnimals()
-          closeModal()
-        }
+        await animalService.create(formData)
+        showToast(`Animal ${formData.codigo} registrado exitosamente`, 'success')
+        loadAnimals()
+        closeModal()
       }
     } catch (error) {
       console.error('Error:', error)
@@ -113,11 +107,9 @@ function Animals({ user }) {
       message: `¿Estás seguro de que deseas eliminar el animal ${codigo}? Esta acción no se puede deshacer.`,
       onConfirm: async () => {
         try {
-          const response = await animalService.delete(id)
-          if (response.success) {
-            showToast(`Animal ${codigo} eliminado exitosamente`, 'success')
-            loadAnimals()
-          }
+          await animalService.delete(id)
+          showToast(`Animal ${codigo} eliminado exitosamente`, 'success')
+          loadAnimals()
         } catch (error) {
           console.error('Error:', error)
           showToast('Error al eliminar el animal', 'error')
@@ -147,13 +139,11 @@ function Animals({ user }) {
   const openModalForNew = async () => {
     try {
       // Obtener el siguiente código automáticamente
-      const response = await animalService.getNextCodigo()
-      if (response.success) {
-        setFormData((prev) => ({
-          ...prev,
-          codigo: response.codigo,
-        }))
-      }
+      const nextCodigo = await animalService.getNextCodigo()
+      setFormData((prev) => ({
+        ...prev,
+        codigo: nextCodigo,
+      }))
     } catch (error) {
       console.error('Error al obtener código:', error)
     }
