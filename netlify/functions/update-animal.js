@@ -25,6 +25,9 @@ exports.handler = async (event, context) => {
     const data = JSON.parse(event.body)
     const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, estado, grupo_id } = data
 
+    console.log('📥 Datos recibidos para actualizar animal ID:', id)
+    console.log('📝 Datos:', data)
+
     // Conectar a Neon
     const sql = neon(process.env.NETLIFY_DATABASE_URL)
 
@@ -44,6 +47,8 @@ exports.handler = async (event, context) => {
       WHERE id = ${id}
       RETURNING *
     `
+
+    console.log('✅ Animal actualizado en BD:', result[0])
 
     if (result.length === 0) {
       return {

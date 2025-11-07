@@ -65,39 +65,77 @@ function Animals({ user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
     try {
+      // Limpiar y validar datos antes de enviar
+      const animalData = {
+        codigo: formData.codigo.trim(),
+        tipo: formData.tipo,
+        raza: formData.raza?.trim() || null,
+        fecha_nacimiento: formData.fecha_nacimiento,
+        peso_inicial: formData.peso_inicial ? parseFloat(formData.peso_inicial) : null,
+        peso_actual: formData.peso_actual ? parseFloat(formData.peso_actual) : null,
+        sexo: formData.sexo,
+        estado: formData.estado,
+        grupo_id: formData.grupo_id || null,
+      }
+      
+      console.log('📤 Enviando datos a la BD:', animalData)
+      
       if (editingAnimal) {
         // Actualizar
-        await animalService.update(editingAnimal.id, formData)
-        showToast(`Animal ${formData.codigo} actualizado exitosamente`, 'success')
+        const response = await animalService.update(editingAnimal.id, animalData)
+        console.log('✅ Respuesta actualización:', response)
+        showToast(`Animal ${animalData.codigo} actualizado exitosamente`, 'success')
         loadAnimals()
         closeModal()
       } else {
         // Crear nuevo
-        await animalService.create(formData)
-        showToast(`Animal ${formData.codigo} registrado exitosamente`, 'success')
+        const response = await animalService.create(animalData)
+        console.log('✅ Respuesta creación:', response)
+        showToast(`Animal ${animalData.codigo} registrado exitosamente`, 'success')
         loadAnimals()
         closeModal()
       }
     } catch (error) {
-      console.error('Error:', error)
-      showToast('Error al guardar el animal', 'error')
+      console.error('❌ Error al guardar:', error)
+      showToast(error.message || 'Error al guardar el animal', 'error')
     }
   }
 
   const handleEdit = (animal) => {
+    console.log('📝 Editando animal:', animal)
     setEditingAnimal(animal)
-    setFormData({
+    
+    // Formatear fecha para input type="date" (solo YYYY-MM-DD)
+    const fechaNacimiento = animal.fecha_nacimiento 
+      ? animal.fecha_nacimiento.split('T')[0] 
+      : ''
+    
+    // Normalizar sexo a minúsculas para que coincida con los options del select
+    const sexoNormalizado = animal.sexo 
+      ? animal.sexo.toLowerCase() 
+      : 'macho'
+    
+    // Normalizar estado a minúsculas
+    const estadoNormalizado = animal.estado 
+      ? animal.estado.toLowerCase() 
+      : 'activo'
+    
+    const formDataToSet = {
       codigo: animal.codigo,
       tipo: animal.tipo,
       raza: animal.raza || '',
-      fecha_nacimiento: animal.fecha_nacimiento,
+      fecha_nacimiento: fechaNacimiento,
       peso_inicial: animal.peso_inicial || '',
       peso_actual: animal.peso_actual || '',
-      sexo: animal.sexo || 'macho',
-      estado: animal.estado,
+      sexo: sexoNormalizado,
+      estado: estadoNormalizado,
       grupo_id: animal.grupo_id || null,
-    })
+    }
+    
+    console.log('📋 Datos del formulario:', formDataToSet)
+    setFormData(formDataToSet)
     setShowModal(true)
   }
 

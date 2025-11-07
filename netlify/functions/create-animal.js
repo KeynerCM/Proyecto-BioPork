@@ -11,7 +11,9 @@ exports.handler = async (event, context) => {
 
   try {
     const data = JSON.parse(event.body)
-    const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, grupo_id } = data
+    const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, estado, grupo_id } = data
+
+    console.log('📥 Datos recibidos para crear animal:', data)
 
     // Validaciones básicas
     if (!codigo || !tipo || !fecha_nacimiento || !sexo) {
@@ -36,22 +38,24 @@ exports.handler = async (event, context) => {
         peso_inicial, 
         peso_actual,
         sexo,
-        grupo_id,
-        estado
+        estado,
+        grupo_id
       )
       VALUES (
         ${codigo}, 
         ${tipo}, 
-        ${raza}, 
+        ${raza || null}, 
         ${fecha_nacimiento}, 
         ${peso_inicial || null}, 
         ${peso_actual || null},
         ${sexo},
-        ${grupo_id || null},
-        'activo'
+        ${estado || 'activo'},
+        ${grupo_id || null}
       )
       RETURNING *
     `
+
+    console.log('✅ Animal creado en BD:', result[0])
 
     return {
       statusCode: 201,
