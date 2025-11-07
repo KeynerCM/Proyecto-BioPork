@@ -109,11 +109,18 @@ exports.handler = async (event) => {
       }
     }
 
-    // Asignar animal al grupo
+    // Asignar animal al grupo en la tabla intermedia
     const asignacion = await sql`
       INSERT INTO animales_grupos (animal_id, grupo_id, fecha_ingreso)
       VALUES (${animal_id}, ${grupo_id}, ${fecha_ingreso || new Date().toISOString()})
       RETURNING *
+    `
+
+    // ✅ ACTUALIZAR grupo_id en la tabla animales
+    await sql`
+      UPDATE animales
+      SET grupo_id = ${grupo_id}
+      WHERE id = ${animal_id}
     `
 
     // Actualizar cantidad_actual del grupo y recalcular estado

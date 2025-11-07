@@ -107,37 +107,71 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Tarjetas de Estadísticas Principales - Minimalistas */}
-      <div className="row g-3 mb-4">
+      {/* Tarjetas de Estadísticas Principales - Cards Cuadradas Minimalistas */}
+      <div className="row g-4 mb-4">
         {/* Card 1: Total de Animales */}
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="card border-0 h-100" style={{ 
             backgroundColor: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
+            borderRadius: '16px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+            e.currentTarget.style.transform = 'translateY(-8px)';
+            e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body p-4">
-              <div className="d-flex align-items-center mb-3">
-                <div className="p-2 rounded" style={{ backgroundColor: '#e3f2fd' }}>
-                  <i className="bi bi-piggy-bank fs-4" style={{ color: '#1976d2' }}></i>
+            <div className="card-body p-4 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+              {/* Icono y Badge */}
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  backgroundColor: '#e3f2fd' 
+                }}>
+                  <i className="bi bi-piggy-bank" style={{ fontSize: '28px', color: '#1976d2' }}></i>
                 </div>
-                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>TOTAL ANIMALES</span>
+                <span className="badge" style={{ 
+                  backgroundColor: '#e3f2fd', 
+                  color: '#1976d2',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  borderRadius: '12px'
+                }}>
+                  ANIMALES
+                </span>
               </div>
-              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
-                {stats?.animales?.total || 0}
-              </h2>
-              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
-                <span>{stats?.animales?.activos || 0} Activos</span>
-                <span>{stats?.animales?.peso_promedio || 0} kg Prom.</span>
+
+              {/* Número Principal */}
+              <div className="mb-2">
+                <h2 className="mb-0 fw-bold" style={{ fontSize: '3rem', color: '#2c3e50', lineHeight: '1' }}>
+                  {stats?.animales?.total || 0}
+                </h2>
+                <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  Total registrados
+                </p>
+              </div>
+
+              {/* Estadísticas Secundarias */}
+              <div className="d-flex justify-content-between pt-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+                <div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Activos</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.animales?.activos || 0}
+                  </div>
+                </div>
+                <div className="text-end">
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Peso Prom.</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.animales?.peso_promedio || 0} kg
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -147,31 +181,65 @@ function Dashboard() {
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="card border-0 h-100" style={{ 
             backgroundColor: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
+            borderRadius: '16px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+            e.currentTarget.style.transform = 'translateY(-8px)';
+            e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body p-4">
-              <div className="d-flex align-items-center mb-3">
-                <div className="p-2 rounded" style={{ backgroundColor: '#fce4ec' }}>
-                  <i className="bi bi-heart-fill fs-4" style={{ color: '#c2185b' }}></i>
+            <div className="card-body p-4 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+              {/* Icono y Badge */}
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  backgroundColor: '#fce4ec' 
+                }}>
+                  <i className="bi bi-heart-fill" style={{ fontSize: '28px', color: '#c2185b' }}></i>
                 </div>
-                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>CERDAS</span>
+                <span className="badge" style={{ 
+                  backgroundColor: '#fce4ec', 
+                  color: '#c2185b',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  borderRadius: '12px'
+                }}>
+                  REPRODUCCIÓN
+                </span>
               </div>
-              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
-                {stats?.animales?.cerdas || 0}
-              </h2>
-              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
-                <span>{stats?.reproduccion?.ciclos_activos || 0} En Ciclo</span>
-                <span>{stats?.reproduccion?.partos_mes || 0} Partos</span>
+
+              {/* Número Principal */}
+              <div className="mb-2">
+                <h2 className="mb-0 fw-bold" style={{ fontSize: '3rem', color: '#2c3e50', lineHeight: '1' }}>
+                  {stats?.animales?.cerdas || 0}
+                </h2>
+                <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  Cerdas activas
+                </p>
+              </div>
+
+              {/* Estadísticas Secundarias */}
+              <div className="d-flex justify-content-between pt-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+                <div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>En Ciclo</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.reproduccion?.ciclos_activos || 0}
+                  </div>
+                </div>
+                <div className="text-end">
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Partos/Mes</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.reproduccion?.partos_mes || 0}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -181,31 +249,65 @@ function Dashboard() {
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="card border-0 h-100" style={{ 
             backgroundColor: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
+            borderRadius: '16px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+            e.currentTarget.style.transform = 'translateY(-8px)';
+            e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body p-4">
-              <div className="d-flex align-items-center mb-3">
-                <div className="p-2 rounded" style={{ backgroundColor: '#e8f5e9' }}>
-                  <i className="bi bi-graph-up-arrow fs-4" style={{ color: '#388e3c' }}></i>
+            <div className="card-body p-4 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+              {/* Icono y Badge */}
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  backgroundColor: '#e8f5e9' 
+                }}>
+                  <i className="bi bi-graph-up-arrow" style={{ fontSize: '28px', color: '#388e3c' }}></i>
                 </div>
-                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>ENGORDE</span>
+                <span className="badge" style={{ 
+                  backgroundColor: '#e8f5e9', 
+                  color: '#388e3c',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  borderRadius: '12px'
+                }}>
+                  ENGORDE
+                </span>
               </div>
-              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
-                {stats?.animales?.engorde || 0}
-              </h2>
-              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
-                <span>{stats?.grupos?.activos || 0} Grupos</span>
-                <span>{stats?.grupos?.animales_asignados || 0} Asignados</span>
+
+              {/* Número Principal */}
+              <div className="mb-2">
+                <h2 className="mb-0 fw-bold" style={{ fontSize: '3rem', color: '#2c3e50', lineHeight: '1' }}>
+                  {stats?.animales?.engorde || 0}
+                </h2>
+                <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  En proceso
+                </p>
+              </div>
+
+              {/* Estadísticas Secundarias */}
+              <div className="d-flex justify-content-between pt-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+                <div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Grupos</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.grupos?.activos || 0}
+                  </div>
+                </div>
+                <div className="text-end">
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Asignados</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.grupos?.animales_asignados || 0}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -215,31 +317,65 @@ function Dashboard() {
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="card border-0 h-100" style={{ 
             backgroundColor: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
+            borderRadius: '16px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+            e.currentTarget.style.transform = 'translateY(-8px)';
+            e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body p-4">
-              <div className="d-flex align-items-center mb-3">
-                <div className="p-2 rounded" style={{ backgroundColor: '#fff3e0' }}>
-                  <i className="bi bi-exclamation-triangle-fill fs-4" style={{ color: '#f57c00' }}></i>
+            <div className="card-body p-4 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+              {/* Icono y Badge */}
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  backgroundColor: '#fff3e0' 
+                }}>
+                  <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: '28px', color: '#f57c00' }}></i>
                 </div>
-                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>ALERTAS</span>
+                <span className="badge" style={{ 
+                  backgroundColor: '#fff3e0', 
+                  color: '#f57c00',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  borderRadius: '12px'
+                }}>
+                  ALERTAS
+                </span>
               </div>
-              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
-                {(stats?.alertas?.partos_proximos || 0) + (stats?.alertas?.vacunaciones_pendientes || 0)}
-              </h2>
-              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
-                <span>{stats?.alertas?.partos_proximos || 0} Partos</span>
-                <span>{stats?.alertas?.vacunaciones_pendientes || 0} Vacunas</span>
+
+              {/* Número Principal */}
+              <div className="mb-2">
+                <h2 className="mb-0 fw-bold" style={{ fontSize: '3rem', color: '#2c3e50', lineHeight: '1' }}>
+                  {(stats?.alertas?.partos_proximos || 0) + (stats?.alertas?.vacunaciones_pendientes || 0)}
+                </h2>
+                <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  Pendientes
+                </p>
+              </div>
+
+              {/* Estadísticas Secundarias */}
+              <div className="d-flex justify-content-between pt-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+                <div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Partos</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.alertas?.partos_proximos || 0}
+                  </div>
+                </div>
+                <div className="text-end">
+                  <div className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '2px' }}>Vacunas</div>
+                  <div className="fw-bold" style={{ fontSize: '1rem', color: '#2c3e50' }}>
+                    {stats?.alertas?.vacunaciones_pendientes || 0}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

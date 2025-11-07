@@ -61,9 +61,6 @@ function Groups({ user }) {
         getAnimals()
       ])
       
-      console.log('📊 Animales cargados:', animalesData)
-      console.log('📊 Grupos cargados:', gruposData)
-      
       setGrupos(gruposData || [])
       setAnimales(animalesData || [])
     } catch (error) {
@@ -205,17 +202,7 @@ function Groups({ user }) {
   }
 
   // Filtrar animales disponibles (sin grupo y activos)
-  const animalesDisponibles = animales.filter(a => {
-    const disponible = !a.grupo_id && a.estado === 'activo'
-    if (!disponible) {
-      console.log(`❌ Animal ${a.codigo} NO disponible - grupo_id: ${a.grupo_id}, estado: ${a.estado}`)
-    } else {
-      console.log(`✅ Animal ${a.codigo} DISPONIBLE`)
-    }
-    return disponible
-  })
-  
-  console.log(`🎯 Total animales disponibles: ${animalesDisponibles.length} de ${animales.length}`)
+  const animalesDisponibles = animales.filter(a => !a.grupo_id && a.estado === 'activo')
 
   const getEstadoBadge = (grupo) => {
     const estadoInfo = getEstadoInfo(grupo.estado_calculado || grupo.estado)

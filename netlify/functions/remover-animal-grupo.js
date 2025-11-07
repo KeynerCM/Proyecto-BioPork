@@ -58,6 +58,13 @@ exports.handler = async (event) => {
       RETURNING *
     `
 
+    // ✅ ACTUALIZAR grupo_id a NULL en la tabla animales
+    await sql`
+      UPDATE animales
+      SET grupo_id = NULL
+      WHERE id = ${animal_id}
+    `
+
     // Obtener datos del grupo para actualizar estado
     const grupo = await sql`
       SELECT cantidad_actual, capacidad, estado FROM grupos
