@@ -24,7 +24,7 @@ function Dashboard() {
       setLoading(true)
       setError(null)
 
-      console.log('📊 Cargando datos del dashboard...')
+      console.log('Cargando datos del dashboard...')
 
       const [statsData, actividadesData, alertasData] = await Promise.all([
         getDashboardStats(),
@@ -32,13 +32,13 @@ function Dashboard() {
         getAlerts(),
       ])
 
-      console.log('✅ Datos del dashboard cargados')
+      console.log(' Datos del dashboard cargados')
 
       setStats(statsData)
       setActividades(actividadesData || [])
       setAlertas(alertasData?.alertas || [])
     } catch (err) {
-      console.error('❌ Error al cargar dashboard:', err)
+      console.error(' Error al cargar dashboard:', err)
       setError(err.message || 'Error al cargar datos del dashboard')
     } finally {
       setLoading(false)
@@ -79,63 +79,65 @@ function Dashboard() {
   }
 
   return (
-    <div className="container-fluid px-4 py-4" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh' }}>
-      {/* Header Mejorado */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card border-0 shadow-lg" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
-            <div className="card-body py-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h2 className="mb-1 fw-bold text-gradient" style={{ 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
-                    <i className="bi bi-speedometer2 me-2"></i>
-                    Dashboard BioPork
-                  </h2>
-                  <p className="text-muted mb-0">
-                    <i className="bi bi-calendar-check me-1"></i>
-                    {new Date().toLocaleDateString('es-ES', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </p>
-                </div>
-                <button className="btn btn-primary btn-lg shadow-sm" onClick={loadDashboardData}>
-                  <i className="bi bi-arrow-clockwise me-2"></i>
-                  Actualizar
-                </button>
-              </div>
-            </div>
+    <div className="container-fluid px-4 py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      {/* Header Minimalista */}
+      <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 className="mb-1 fw-light" style={{ fontSize: '2rem', color: '#2c3e50' }}>
+              Dashboard
+            </h1>
+            <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+              {new Date().toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
           </div>
+          <button 
+            className="btn btn-outline-secondary btn-sm px-3"
+            onClick={loadDashboardData}
+            style={{ borderRadius: '8px' }}
+          >
+            <i className="bi bi-arrow-clockwise me-2"></i>
+            Actualizar
+          </button>
         </div>
       </div>
 
-      {/* Tarjetas de Estadísticas Principales - Diseño Mejorado */}
-      <div className="row g-4 mb-4">
+      {/* Tarjetas de Estadísticas Principales - Minimalistas */}
+      <div className="row g-3 mb-4">
         {/* Card 1: Total de Animales */}
         <div className="col-xl-3 col-lg-6 col-md-6">
-          <div className="card border-0 shadow-lg hover-card h-100" style={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            transition: 'transform 0.3s'
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body text-white p-4">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <p className="mb-1 opacity-75 fw-bold">TOTAL ANIMALES</p>
-                  <h1 className="mb-0 fw-bold display-4">{stats?.animales?.total || 0}</h1>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="p-2 rounded" style={{ backgroundColor: '#e3f2fd' }}>
+                  <i className="bi bi-piggy-bank fs-4" style={{ color: '#1976d2' }}></i>
                 </div>
-                <div className="bg-white bg-opacity-25 p-3 rounded-circle">
-                  <i className="bi bi-piggy-bank fs-1"></i>
-                </div>
+                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>TOTAL ANIMALES</span>
               </div>
-              <div className="d-flex justify-content-between border-top border-white border-opacity-25 pt-3">
-                <span><i className="bi bi-check-circle me-1"></i>{stats?.animales?.activos || 0} Activos</span>
-                <span><i className="bi bi-percent me-1"></i>{stats?.animales?.peso_promedio || 0} kg</span>
+              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+                {stats?.animales?.total || 0}
+              </h2>
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
+                <span>{stats?.animales?.activos || 0} Activos</span>
+                <span>{stats?.animales?.peso_promedio || 0} kg Prom.</span>
               </div>
             </div>
           </div>
@@ -143,23 +145,33 @@ function Dashboard() {
 
         {/* Card 2: Cerdas Reproductoras */}
         <div className="col-xl-3 col-lg-6 col-md-6">
-          <div className="card border-0 shadow-lg hover-card h-100" style={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            transition: 'transform 0.3s'
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body text-white p-4">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <p className="mb-1 opacity-75 fw-bold">CERDAS</p>
-                  <h1 className="mb-0 fw-bold display-4">{stats?.animales?.cerdas || 0}</h1>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="p-2 rounded" style={{ backgroundColor: '#fce4ec' }}>
+                  <i className="bi bi-heart-fill fs-4" style={{ color: '#c2185b' }}></i>
                 </div>
-                <div className="bg-white bg-opacity-25 p-3 rounded-circle">
-                  <i className="bi bi-heart-fill fs-1"></i>
-                </div>
+                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>CERDAS</span>
               </div>
-              <div className="d-flex justify-content-between border-top border-white border-opacity-25 pt-3">
-                <span><i className="bi bi-arrow-repeat me-1"></i>{stats?.reproduccion?.ciclos_activos || 0} En Ciclo</span>
-                <span><i className="bi bi-calendar-heart me-1"></i>{stats?.reproduccion?.partos_mes || 0} Partos</span>
+              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+                {stats?.animales?.cerdas || 0}
+              </h2>
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
+                <span>{stats?.reproduccion?.ciclos_activos || 0} En Ciclo</span>
+                <span>{stats?.reproduccion?.partos_mes || 0} Partos</span>
               </div>
             </div>
           </div>
@@ -167,23 +179,33 @@ function Dashboard() {
 
         {/* Card 3: Engorde */}
         <div className="col-xl-3 col-lg-6 col-md-6">
-          <div className="card border-0 shadow-lg hover-card h-100" style={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            transition: 'transform 0.3s'
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body text-white p-4">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <p className="mb-1 opacity-75 fw-bold">ENGORDE</p>
-                  <h1 className="mb-0 fw-bold display-4">{stats?.animales?.engorde || 0}</h1>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="p-2 rounded" style={{ backgroundColor: '#e8f5e9' }}>
+                  <i className="bi bi-graph-up-arrow fs-4" style={{ color: '#388e3c' }}></i>
                 </div>
-                <div className="bg-white bg-opacity-25 p-3 rounded-circle">
-                  <i className="bi bi-graph-up-arrow fs-1"></i>
-                </div>
+                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>ENGORDE</span>
               </div>
-              <div className="d-flex justify-content-between border-top border-white border-opacity-25 pt-3">
-                <span><i className="bi bi-grid-3x3 me-1"></i>{stats?.grupos?.activos || 0} Grupos</span>
-                <span><i className="bi bi-people-fill me-1"></i>{stats?.grupos?.animales_asignados || 0} Asignados</span>
+              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+                {stats?.animales?.engorde || 0}
+              </h2>
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
+                <span>{stats?.grupos?.activos || 0} Grupos</span>
+                <span>{stats?.grupos?.animales_asignados || 0} Asignados</span>
               </div>
             </div>
           </div>
@@ -191,78 +213,97 @@ function Dashboard() {
 
         {/* Card 4: Alertas */}
         <div className="col-xl-3 col-lg-6 col-md-6">
-          <div className="card border-0 shadow-lg hover-card h-100" style={{ 
-            background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-            transition: 'transform 0.3s'
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
           }}>
-            <div className="card-body text-white p-4">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <p className="mb-1 opacity-75 fw-bold">ALERTAS</p>
-                  <h1 className="mb-0 fw-bold display-4">
-                    {(stats?.alertas?.partos_proximos || 0) + (stats?.alertas?.vacunaciones_pendientes || 0)}
-                  </h1>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="p-2 rounded" style={{ backgroundColor: '#fff3e0' }}>
+                  <i className="bi bi-exclamation-triangle-fill fs-4" style={{ color: '#f57c00' }}></i>
                 </div>
-                <div className="bg-white bg-opacity-25 p-3 rounded-circle">
-                  <i className="bi bi-exclamation-triangle-fill fs-1"></i>
-                </div>
+                <span className="ms-2 text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>ALERTAS</span>
               </div>
-              <div className="d-flex justify-content-between border-top border-white border-opacity-25 pt-3">
-                <span><i className="bi bi-calendar-event me-1"></i>{stats?.alertas?.partos_proximos || 0} Partos</span>
-                <span><i className="bi bi-shield-fill-check me-1"></i>{stats?.alertas?.vacunaciones_pendientes || 0} Vacunas</span>
+              <h2 className="mb-2 fw-bold" style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+                {(stats?.alertas?.partos_proximos || 0) + (stats?.alertas?.vacunaciones_pendientes || 0)}
+              </h2>
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.85rem' }}>
+                <span>{stats?.alertas?.partos_proximos || 0} Partos</span>
+                <span>{stats?.alertas?.vacunaciones_pendientes || 0} Vacunas</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tarjetas Secundarias */}
-      <div className="row g-4 mb-4">
+      {/* Sección de Detalles - Diseño Minimalista */}
+      <div className="row g-3 mb-4">
         {/* Grupos y Corrales */}
         <div className="col-lg-4">
-          <div className="card border-0 shadow-lg h-100">
-            <div className="card-header bg-gradient text-white border-0 py-3" style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}>
-              <h5 className="mb-0">
-                <i className="bi bi-grid-3x3-gap-fill me-2"></i>
-                Grupos y Corrales
-              </h5>
-            </div>
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          }}>
             <div className="card-body p-4">
-              <div className="row g-3">
-                <div className="col-6 text-center">
-                  <div className="bg-primary bg-opacity-10 p-3 rounded">
-                    <h2 className="mb-1 text-primary fw-bold">{stats?.grupos?.total || 0}</h2>
-                    <small className="text-muted">Total Grupos</small>
+              <div className="d-flex align-items-center mb-4">
+                <div className="p-2 rounded" style={{ backgroundColor: '#e3f2fd' }}>
+                  <i className="bi bi-grid-3x3-gap-fill fs-5" style={{ color: '#1976d2' }}></i>
+                </div>
+                <h6 className="mb-0 ms-2 fw-semibold" style={{ color: '#2c3e50' }}>Grupos y Corrales</h6>
+              </div>
+              
+              <div className="row g-3 mb-3">
+                <div className="col-6">
+                  <div className="p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>Total</div>
+                    <div className="fw-bold" style={{ fontSize: '1.5rem', color: '#2c3e50' }}>
+                      {stats?.grupos?.total || 0}
+                    </div>
                   </div>
                 </div>
-                <div className="col-6 text-center">
-                  <div className="bg-success bg-opacity-10 p-3 rounded">
-                    <h2 className="mb-1 text-success fw-bold">{stats?.grupos?.activos || 0}</h2>
-                    <small className="text-muted">Activos</small>
+                <div className="col-6">
+                  <div className="p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>Activos</div>
+                    <div className="fw-bold" style={{ fontSize: '1.5rem', color: '#2c3e50' }}>
+                      {stats?.grupos?.activos || 0}
+                    </div>
                   </div>
                 </div>
-                <div className="col-12">
-                  <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted">Ocupación Promedio</span>
-                    <strong className="text-primary">{stats?.grupos?.ocupacion_promedio || 0}%</strong>
-                  </div>
-                  <div className="progress" style={{ height: '12px' }}>
-                    <div 
-                      className="progress-bar bg-primary" 
-                      style={{ width: `${stats?.grupos?.ocupacion_promedio || 0}%` }}
-                    ></div>
-                  </div>
+              </div>
+
+              <div className="mb-2">
+                <div className="d-flex justify-content-between mb-2" style={{ fontSize: '0.85rem' }}>
+                  <span className="text-muted">Ocupación</span>
+                  <span className="fw-semibold" style={{ color: '#1976d2' }}>
+                    {stats?.grupos?.ocupacion_promedio || 0}%
+                  </span>
                 </div>
-                <div className="col-12">
-                  <div className="alert alert-info mb-0 py-2">
-                    <small>
-                      <i className="bi bi-info-circle me-1"></i>
-                      <strong>{stats?.grupos?.animales_asignados || 0}</strong> animales de <strong>{stats?.grupos?.capacidad_total || 0}</strong> capacidad total
-                    </small>
-                  </div>
+                <div className="progress" style={{ height: '6px', borderRadius: '3px', backgroundColor: '#e3f2fd' }}>
+                  <div 
+                    className="progress-bar" 
+                    style={{ 
+                      width: `${stats?.grupos?.ocupacion_promedio || 0}%`,
+                      backgroundColor: '#1976d2'
+                    }}
+                  ></div>
                 </div>
+              </div>
+
+              <div className="p-2 rounded mt-3" style={{ backgroundColor: '#f8f9fa', fontSize: '0.85rem' }}>
+                <span className="text-muted">
+                  {stats?.grupos?.animales_asignados || 0} de {stats?.grupos?.capacidad_total || 0} capacidad
+                </span>
               </div>
             </div>
           </div>
@@ -270,37 +311,48 @@ function Dashboard() {
 
         {/* Salud */}
         <div className="col-lg-4">
-          <div className="card border-0 shadow-lg h-100">
-            <div className="card-header bg-gradient text-white border-0 py-3" style={{ 
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-            }}>
-              <h5 className="mb-0">
-                <i className="bi bi-heart-pulse-fill me-2"></i>
-                Salud (Último Mes)
-              </h5>
-            </div>
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          }}>
             <div className="card-body p-4">
-              <div className="row g-3">
-                <div className="col-4 text-center">
-                  <div className="bg-info bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-shield-fill-check fs-1 text-info mb-2"></i>
-                    <h3 className="mb-1 text-info fw-bold">{stats?.salud?.vacunaciones_mes || 0}</h3>
-                    <small className="text-muted">Vacunaciones</small>
-                  </div>
+              <div className="d-flex align-items-center mb-4">
+                <div className="p-2 rounded" style={{ backgroundColor: '#e8f5e9' }}>
+                  <i className="bi bi-heart-pulse-fill fs-5" style={{ color: '#388e3c' }}></i>
                 </div>
-                <div className="col-4 text-center">
-                  <div className="bg-warning bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-bandaid-fill fs-1 text-warning mb-2"></i>
-                    <h3 className="mb-1 text-warning fw-bold">{stats?.salud?.enfermedades_mes || 0}</h3>
-                    <small className="text-muted">Enfermedades</small>
+                <h6 className="mb-0 ms-2 fw-semibold" style={{ color: '#2c3e50' }}>Salud (Último Mes)</h6>
+              </div>
+              
+              <div className="d-flex flex-column gap-3">
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-shield-fill-check me-2" style={{ color: '#388e3c', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Vacunaciones</span>
                   </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.salud?.vacunaciones_mes || 0}
+                  </span>
                 </div>
-                <div className="col-4 text-center">
-                  <div className="bg-danger bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-capsule fs-1 text-danger mb-2"></i>
-                    <h3 className="mb-1 text-danger fw-bold">{stats?.salud?.tratamientos_activos || 0}</h3>
-                    <small className="text-muted">Tratamientos</small>
+
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-bandaid-fill me-2" style={{ color: '#f57c00', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Enfermedades</span>
                   </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.salud?.enfermedades_mes || 0}
+                  </span>
+                </div>
+
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-capsule me-2" style={{ color: '#d32f2f', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Tratamientos</span>
+                  </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.salud?.tratamientos_activos || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -309,37 +361,48 @@ function Dashboard() {
 
         {/* Reproducción */}
         <div className="col-lg-4">
-          <div className="card border-0 shadow-lg h-100">
-            <div className="card-header bg-gradient text-white border-0 py-3" style={{ 
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-            }}>
-              <h5 className="mb-0">
-                <i className="bi bi-heart-fill me-2"></i>
-                Reproducción (Último Mes)
-              </h5>
-            </div>
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          }}>
             <div className="card-body p-4">
-              <div className="row g-3">
-                <div className="col-4 text-center">
-                  <div className="bg-danger bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-arrow-repeat fs-1 text-danger mb-2"></i>
-                    <h3 className="mb-1 text-danger fw-bold">{stats?.reproduccion?.ciclos_activos || 0}</h3>
-                    <small className="text-muted">Ciclos</small>
-                  </div>
+              <div className="d-flex align-items-center mb-4">
+                <div className="p-2 rounded" style={{ backgroundColor: '#fce4ec' }}>
+                  <i className="bi bi-heart-fill fs-5" style={{ color: '#c2185b' }}></i>
                 </div>
-                <div className="col-4 text-center">
-                  <div className="bg-success bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-balloon-heart-fill fs-1 text-success mb-2"></i>
-                    <h3 className="mb-1 text-success fw-bold">{stats?.reproduccion?.partos_mes || 0}</h3>
-                    <small className="text-muted">Partos</small>
+                <h6 className="mb-0 ms-2 fw-semibold" style={{ color: '#2c3e50' }}>Reproducción (Último Mes)</h6>
+              </div>
+              
+              <div className="d-flex flex-column gap-3">
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-arrow-repeat me-2" style={{ color: '#c2185b', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Ciclos Activos</span>
                   </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.reproduccion?.ciclos_activos || 0}
+                  </span>
                 </div>
-                <div className="col-4 text-center">
-                  <div className="bg-info bg-opacity-10 p-3 rounded">
-                    <i className="bi bi-people-fill fs-1 text-info mb-2"></i>
-                    <h3 className="mb-1 text-info fw-bold">{stats?.reproduccion?.lechones_nacidos_mes || 0}</h3>
-                    <small className="text-muted">Lechones</small>
+
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-balloon-heart-fill me-2" style={{ color: '#c2185b', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Partos</span>
                   </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.reproduccion?.partos_mes || 0}
+                  </span>
+                </div>
+
+                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-people-fill me-2" style={{ color: '#c2185b', fontSize: '1.2rem' }}></i>
+                    <span style={{ fontSize: '0.9rem', color: '#2c3e50' }}>Lechones</span>
+                  </div>
+                  <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2c3e50' }}>
+                    {stats?.reproduccion?.lechones_nacidos_mes || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -347,125 +410,195 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Alertas y Actividad Reciente - Diseño Mejorado */}
-      <div className="row g-4">
+      {/* Alertas y Actividad Reciente - Minimalista */}
+      <div className="row g-3">
         {/* Alertas */}
         <div className="col-lg-6">
-          <div className="card border-0 shadow-lg h-100">
-            <div className="card-header bg-gradient text-white border-0 py-3" style={{ 
-              background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
-            }}>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">
-                  <i className="bi bi-bell-fill me-2"></i>
-                  Alertas y Notificaciones
-                </h5>
-                <span className="badge bg-white text-dark fs-6 px-3 py-2">{alertas.length}</span>
-              </div>
-            </div>
-            <div className="card-body p-0" style={{ maxHeight: '450px', overflowY: 'auto' }}>
-              {alertas.length === 0 ? (
-                <div className="text-center text-muted py-5">
-                  <i className="bi bi-check-circle fs-1 text-success mb-3 d-block"></i>
-                  <h5>¡Todo al día!</h5>
-                  <p className="mb-0">No hay alertas pendientes</p>
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          }}>
+            <div className="card-body p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center">
+                  <div className="p-2 rounded" style={{ backgroundColor: '#fff3e0' }}>
+                    <i className="bi bi-bell-fill fs-5" style={{ color: '#f57c00' }}></i>
+                  </div>
+                  <h6 className="mb-0 ms-2 fw-semibold" style={{ color: '#2c3e50' }}>Alertas</h6>
                 </div>
-              ) : (
-                <div className="list-group list-group-flush">
-                  {alertas.slice(0, 10).map((alerta, index) => (
-                    <div
-                      key={index}
-                      className="list-group-item border-start-0 border-end-0 hover-bg-light p-3"
-                      style={{ transition: 'background-color 0.2s' }}
-                    >
-                      <div className="d-flex">
-                        <div className={`text-${getClaseAlerta(alerta.severidad)} me-3`}>
-                          <i className={`bi ${
-                            alerta.severidad === 'danger' ? 'bi-exclamation-triangle-fill' :
-                            alerta.severidad === 'warning' ? 'bi-exclamation-circle-fill' :
-                            'bi-info-circle-fill'
-                          } fs-2`}></i>
-                        </div>
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between align-items-start mb-2">
-                            <h6 className="mb-0 fw-bold">{alerta.titulo}</h6>
-                            <span className={`badge bg-${getClaseAlerta(alerta.severidad)} ms-2`}>
-                              {alerta.tipo}
-                            </span>
+                <span className="badge rounded-pill" style={{ 
+                  backgroundColor: '#f57c00',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  padding: '0.35rem 0.75rem'
+                }}>
+                  {alertas.length}
+                </span>
+              </div>
+              
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {alertas.length === 0 ? (
+                  <div className="text-center py-5">
+                    <i className="bi bi-check-circle d-block mb-3" style={{ fontSize: '3rem', color: '#388e3c' }}></i>
+                    <p className="text-muted mb-0">No hay alertas pendientes</p>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column gap-2">
+                    {alertas.slice(0, 8).map((alerta, index) => (
+                      <div
+                        key={index}
+                        className="p-3 rounded"
+                        style={{ 
+                          backgroundColor: '#f8f9fa',
+                          transition: 'background-color 0.2s',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                      >
+                        <div className="d-flex">
+                          <i 
+                            className={`bi ${
+                              alerta.severidad === 'danger' ? 'bi-exclamation-triangle-fill' :
+                              alerta.severidad === 'warning' ? 'bi-exclamation-circle-fill' :
+                              'bi-info-circle-fill'
+                            } me-3`}
+                            style={{ 
+                              color: alerta.severidad === 'danger' ? '#d32f2f' :
+                                     alerta.severidad === 'warning' ? '#f57c00' : '#1976d2',
+                              fontSize: '1.3rem'
+                            }}
+                          ></i>
+                          <div className="flex-grow-1">
+                            <div className="d-flex justify-content-between align-items-start mb-1">
+                              <h6 className="mb-0 fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
+                                {alerta.titulo}
+                              </h6>
+                              <span 
+                                className="badge ms-2"
+                                style={{ 
+                                  backgroundColor: alerta.severidad === 'danger' ? '#ffebee' :
+                                                 alerta.severidad === 'warning' ? '#fff3e0' : '#e3f2fd',
+                                  color: alerta.severidad === 'danger' ? '#d32f2f' :
+                                        alerta.severidad === 'warning' ? '#f57c00' : '#1976d2',
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                {alerta.tipo}
+                              </span>
+                            </div>
+                            <p className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>{alerta.mensaje}</p>
+                            <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                              <i className="bi bi-clock me-1"></i>
+                              {getTiempoRelativo(alerta.fecha)}
+                            </small>
                           </div>
-                          <p className="mb-2 text-muted small">{alerta.mensaje}</p>
-                          <small className="text-muted">
-                            <i className="bi bi-clock me-1"></i>
-                            {getTiempoRelativo(alerta.fecha)}
-                          </small>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Actividad Reciente */}
         <div className="col-lg-6">
-          <div className="card border-0 shadow-lg h-100">
-            <div className="card-header bg-gradient text-white border-0 py-3" style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">
-                  <i className="bi bi-activity me-2"></i>
-                  Actividad Reciente
-                </h5>
-                <span className="badge bg-white text-dark fs-6 px-3 py-2">{actividades.length}</span>
-              </div>
-            </div>
-            <div className="card-body p-0" style={{ maxHeight: '450px', overflowY: 'auto' }}>
-              {actividades.length === 0 ? (
-                <div className="text-center text-muted py-5">
-                  <i className="bi bi-inbox fs-1 text-secondary mb-3 d-block"></i>
-                  <h5>Sin actividad</h5>
-                  <p className="mb-0">No hay actividad reciente registrada</p>
+          <div className="card border-0 h-100" style={{ 
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          }}>
+            <div className="card-body p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center">
+                  <div className="p-2 rounded" style={{ backgroundColor: '#e3f2fd' }}>
+                    <i className="bi bi-activity fs-5" style={{ color: '#1976d2' }}></i>
+                  </div>
+                  <h6 className="mb-0 ms-2 fw-semibold" style={{ color: '#2c3e50' }}>Actividad Reciente</h6>
                 </div>
-              ) : (
-                <div className="list-group list-group-flush">
-                  {actividades.map((actividad, index) => (
-                    <div 
-                      key={index} 
-                      className="list-group-item border-start-0 border-end-0 hover-bg-light p-3"
-                      style={{ transition: 'background-color 0.2s' }}
-                    >
-                      <div className="d-flex align-items-start">
-                        <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3" style={{ width: '48px', height: '48px' }}>
-                          <div className="text-center" style={{ fontSize: '1.5rem', lineHeight: '32px' }}>
+                <span className="badge rounded-pill" style={{ 
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  padding: '0.35rem 0.75rem'
+                }}>
+                  {actividades.length}
+                </span>
+              </div>
+              
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {actividades.length === 0 ? (
+                  <div className="text-center py-5">
+                    <i className="bi bi-inbox d-block mb-3" style={{ fontSize: '3rem', color: '#9e9e9e' }}></i>
+                    <p className="text-muted mb-0">No hay actividad reciente</p>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column gap-2">
+                    {actividades.map((actividad, index) => (
+                      <div 
+                        key={index} 
+                        className="p-3 rounded"
+                        style={{ 
+                          backgroundColor: '#f8f9fa',
+                          transition: 'background-color 0.2s',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                      >
+                        <div className="d-flex align-items-start">
+                          <div 
+                            className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                            style={{ 
+                              width: '40px',
+                              height: '40px',
+                              backgroundColor: '#e3f2fd',
+                              fontSize: '1.3rem',
+                              flexShrink: 0
+                            }}
+                          >
                             {getIconoActividad(actividad.tipo)}
                           </div>
-                        </div>
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between align-items-start mb-1">
-                            <h6 className="mb-0 fw-bold">{actividad.titulo}</h6>
-                            <span className="badge bg-primary ms-2">{actividad.modulo}</span>
-                          </div>
-                          <p className="mb-2 text-muted small">{actividad.descripcion}</p>
-                          <div className="d-flex align-items-center text-muted small">
-                            <i className="bi bi-clock me-1"></i>
-                            {getTiempoRelativo(actividad.fecha)}
-                            {actividad.usuario && (
-                              <>
-                                <span className="mx-2">•</span>
-                                <i className="bi bi-person me-1"></i>
-                                {actividad.usuario}
-                              </>
-                            )}
+                          <div className="flex-grow-1">
+                            <div className="d-flex justify-content-between align-items-start mb-1">
+                              <h6 className="mb-0 fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
+                                {actividad.titulo}
+                              </h6>
+                              <span 
+                                className="badge ms-2"
+                                style={{ 
+                                  backgroundColor: '#e3f2fd',
+                                  color: '#1976d2',
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                {actividad.modulo}
+                              </span>
+                            </div>
+                            <p className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
+                              {actividad.descripcion}
+                            </p>
+                            <div className="d-flex align-items-center text-muted" style={{ fontSize: '0.75rem' }}>
+                              <i className="bi bi-clock me-1"></i>
+                              {getTiempoRelativo(actividad.fecha)}
+                              {actividad.usuario && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  <i className="bi bi-person me-1"></i>
+                                  {actividad.usuario}
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
