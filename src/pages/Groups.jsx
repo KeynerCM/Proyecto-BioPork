@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+import { Package, Plus, Edit2, Trash2, Users, CheckCircle, XCircle } from 'lucide-react'
+import Card from '../components/Card'
+import Button from '../components/Button'
+import Toast from '../components/Toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 import {
   getGrupos,
   getNextCodigoGrupo,
@@ -11,32 +16,26 @@ import {
   confirmarGrupo,
   iniciarSalidaGrupo,
   completarSalidaGrupo,
-  calcularOcupacion,
   getEstadoInfo,
-  formatearFecha,
-  puedeAsignarAnimal,
 } from '../services/groupService'
 import { getAnimals } from '../services/animalService'
 
-const Groups = () => {
-  // ============================================
-  // Estados
-  // ============================================
+function Groups({ user }) {
+  const [activeTab, setActiveTab] = useState('grupos')
   const [grupos, setGrupos] = useState([])
   const [animales, setAnimales] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [filtroTipo, setFiltroTipo] = useState('todos') // todos, engorde, reproduccion
-  const [filtroEstado, setFiltroEstado] = useState('todos') // todos, en_creacion, incompleto, completo, etc.
-
-  // Estados para modales
-  const [showModalGrupo, setShowModalGrupo] = useState(false)
-  const [showModalAnimales, setShowModalAnimales] = useState(false)
-  const [showModalAsignar, setShowModalAsignar] = useState(false)
-  const [showModalSalida, setShowModalSalida] = useState(false)
-
-  // Estados para formularios
-  const [grupoActual, setGrupoActual] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [showAnimalModal, setShowAnimalModal] = useState(false)
+  const [editingItem, setEditingItem] = useState(null)
+  const [selectedGrupo, setSelectedGrupo] = useState(null)
+  const [toast, setToast] = useState(null)
+  const [confirmDialog, setConfirmDialog] = useState(null)
+  
+  // Verificar permisos
+  const canEdit = user?.rol === 'admin' || user?.rol === 'operario'
+  const canDelete = user?.rol === 'admin'
+  
   const [formData, setFormData] = useState({
     codigo: '',
     nombre: '',
@@ -48,122 +47,79 @@ const Groups = () => {
     notas: '',
   })
 
-  // Estados para gestión de animales
-  const [grupoSeleccionado, setGrupoSeleccionado] = useState(null)
-  const [animalesGrupo, setAnimalesGrupo] = useState([])
   const [animalSeleccionado, setAnimalSeleccionado] = useState('')
-  const [tipoSalida, setTipoSalida] = useState('total') // total o parcial
 
-  // ============================================
-  // Efectos
-  // ============================================
   useEffect(() => {
     loadData()
   }, [])
 
-  // ============================================
-  // Funciones de carga de datos
-  // ============================================
   const loadData = async () => {
     try {
       setLoading(true)
-      setError(null)
-
-      console.log('🔍 Cargando datos de grupos y animales...')
-
       const [gruposData, animalesData] = await Promise.all([
         getGrupos(),
-        getAnimals(),
+        getAnimals()
       ])
-
-      console.log('✅ Datos cargados:', {
-        grupos: gruposData.length,
-        animales: animalesData.length,
-      })
-
+      
       setGrupos(gruposData || [])
       setAnimales(animalesData || [])
-    } catch (err) {
-      console.error('❌ Error al cargar datos:', err)
-      setError(err.message || 'Error al cargar datos')
+    } catch (error) {
+      console.error('Error loading groups data:', error)
+      showToast('Error al cargar los datos', 'error')
     } finally {
       setLoading(false)
     }
   }
 
-  const loadAnimalesGrupo = async (grupoId) => {
-    try {
-      const animalesData = await getAnimalesByGrupo(grupoId, false)
-      setAnimalesGrupo(animalesData || [])
-    } catch (err) {
-      console.error('❌ Error al cargar animales del grupo:', err)
-      alert('Error al cargar animales del grupo: ' + err.message)
-    }
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
   }
 
-  // ============================================
-  // Funciones de manejo de formularios
-  // ============================================
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleNuevoGrupo = async () => {
-    try {
-      const nextCodigo = await getNextCodigoGrupo()
+  const openModal = async (grupo = null) => {
+    if (grupo) {
+      setEditingItem(grupo)
       setFormData({
-        codigo: nextCodigo,
-        nombre: '',
-        tipo: 'engorde',
-        corral_numero: '',
-        capacidad: 10,
-        fecha_creacion: new Date().toISOString().split('T')[0],
-        fecha_salida_programada: '',
-        notas: '',
+        codigo: grupo.codigo,
+        nombre: grupo.nombre || '',
+        tipo: grupo.tipo,
+        corral_numero: grupo.corral_numero || '',
+        capacidad: grupo.capacidad,
+        fecha_creacion: grupo.fecha_creacion?.split('T')[0] || '',
+        fecha_salida_programada: grupo.fecha_salida_programada?.split('T')[0] || '',
+        notas: grupo.notas || '',
       })
-      setGrupoActual(null)
-      setShowModalGrupo(true)
-    } catch (err) {
-      alert('Error al obtener código: ' + err.message)
+    } else {
+      try {
+        const nextCodigo = await getNextCodigoGrupo()
+        setEditingItem(null)
+        setFormData({
+          codigo: nextCodigo,
+          nombre: '',
+          tipo: 'engorde',
+          corral_numero: '',
+          capacidad: 10,
+          fecha_creacion: new Date().toISOString().split('T')[0],
+          fecha_salida_programada: '',
+          notas: '',
+        })
+      } catch (error) {
+        showToast('Error al obtener código', 'error')
+        return
+      }
     }
+    setShowModal(true)
   }
 
-  const handleEditarGrupo = (grupo) => {
-    setGrupoActual(grupo)
-    setFormData({
-      codigo: grupo.codigo,
-      nombre: grupo.nombre || '',
-      tipo: grupo.tipo,
-      corral_numero: grupo.corral_numero || '',
-      capacidad: grupo.capacidad,
-      fecha_creacion: grupo.fecha_creacion?.split('T')[0] || '',
-      fecha_salida_programada: grupo.fecha_salida_programada?.split('T')[0] || '',
-      notas: grupo.notas || '',
-    })
-    setShowModalGrupo(true)
+  const closeModal = () => {
+    setShowModal(false)
+    setEditingItem(null)
   }
 
-  const handleSubmitGrupo = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-
+    
     try {
-      // Validaciones
-      if (!formData.codigo || !formData.tipo || !formData.capacidad) {
-        alert('Por favor complete los campos requeridos: código, tipo y capacidad')
-        return
-      }
-
-      if (formData.capacidad < 1) {
-        alert('La capacidad debe ser mayor a 0')
-        return
-      }
-
-      // Preparar datos para enviar
-      const grupoDataToSend = {
+      const grupoData = {
         codigo: formData.codigo.trim(),
         nombre: formData.nombre?.trim() || null,
         tipo: formData.tipo,
@@ -174,1051 +130,577 @@ const Groups = () => {
         notas: formData.notas?.trim() || null,
       }
 
-      console.log('📋 Datos a enviar:', grupoDataToSend)
-
-      if (grupoActual) {
-        // Actualizar
-        await updateGrupo(grupoActual.id, grupoDataToSend)
-        alert('Grupo actualizado exitosamente')
+      if (editingItem) {
+        await updateGrupo(editingItem.id, grupoData)
+        showToast('Grupo actualizado exitosamente', 'success')
       } else {
-        // Crear nuevo
-        const result = await createGrupo(grupoDataToSend)
-        console.log('✅ Grupo creado:', result)
-        alert('Grupo creado exitosamente')
+        await createGrupo(grupoData)
+        showToast('Grupo creado exitosamente', 'success')
       }
 
-      setShowModalGrupo(false)
-      loadData()
-    } catch (err) {
-      console.error('❌ Error al guardar grupo:', err)
-      alert('Error al guardar grupo: ' + err.message)
+      closeModal()
+      await loadData()
+    } catch (error) {
+      console.error('Error submitting grupo:', error)
+      showToast(error.message || 'Error al guardar el grupo', 'error')
     }
   }
 
-  const handleEliminarGrupo = async (grupo) => {
-    if (!confirm(`¿Está seguro de eliminar el grupo ${grupo.codigo}?`)) {
-      return
-    }
-
-    try {
-      await deleteGrupo(grupo.id)
-      alert('Grupo eliminado exitosamente')
-      loadData()
-    } catch (err) {
-      alert('Error al eliminar grupo: ' + err.message)
-    }
+  const handleDelete = (grupo) => {
+    setConfirmDialog({
+      title: '¿Eliminar grupo?',
+      message: `¿Estás seguro de que deseas eliminar el grupo ${grupo.codigo}?`,
+      onConfirm: async () => {
+        try {
+          await deleteGrupo(grupo.id)
+          showToast('Grupo eliminado exitosamente', 'success')
+          await loadData()
+        } catch (error) {
+          showToast(error.message || 'Error al eliminar', 'error')
+        }
+        setConfirmDialog(null)
+      },
+      onCancel: () => setConfirmDialog(null)
+    })
   }
 
-  // ============================================
-  // Funciones de gestión de animales
-  // ============================================
-  const handleVerAnimales = async (grupo) => {
-    setGrupoSeleccionado(grupo)
-    await loadAnimalesGrupo(grupo.id)
-    setShowModalAnimales(true)
-  }
-
-  const handleAsignarAnimal = (grupo) => {
-    if (!puedeAsignarAnimal(grupo)) {
-      alert('El grupo está lleno o inactivo')
-      return
-    }
-
-    setGrupoSeleccionado(grupo)
-    setAnimalSeleccionado('')
-    setShowModalAsignar(true)
-  }
-
-  const handleSubmitAsignar = async (e) => {
-    e.preventDefault()
-
-    if (!animalSeleccionado) {
-      alert('Por favor seleccione un animal')
-      return
-    }
-
-    try {
-      await asignarAnimalGrupo(
-        parseInt(animalSeleccionado),
-        grupoSeleccionado.id
-      )
-      alert('Animal asignado exitosamente')
-      setShowModalAsignar(false)
-      loadData()
-    } catch (err) {
-      alert('Error al asignar animal: ' + err.message)
-    }
-  }
-
-  const handleRemoverAnimal = async (animalId) => {
-    if (!confirm('¿Está seguro de remover este animal del grupo?')) {
-      return
-    }
-
-    try {
-      await removerAnimalGrupo(animalId, grupoSeleccionado.id)
-      alert('Animal removido exitosamente')
-      await loadAnimalesGrupo(grupoSeleccionado.id)
-      loadData()
-    } catch (err) {
-      alert('Error al remover animal: ' + err.message)
-    }
-  }
-
-  // ============================================
-  // Funciones de gestión de estados (Diagrama UML)
-  // ============================================
   const handleConfirmarGrupo = async (grupo) => {
-    if (!confirm(`¿Confirmar grupo ${grupo.codigo}? Esto cambiará su estado a Incompleto/Completo.`)) {
-      return
-    }
-
     try {
       const result = await confirmarGrupo(grupo.id)
-      alert(result.message)
+      showToast(result.message, 'success')
       if (result.notificacion) {
-        alert(`🔔 ${result.notificacion}`)
+        showToast(result.notificacion, 'info')
       }
-      loadData()
-    } catch (err) {
-      alert('Error al confirmar grupo: ' + err.message)
+      await loadData()
+    } catch (error) {
+      showToast(error.message || 'Error al confirmar grupo', 'error')
     }
   }
 
-  const handleIniciarSalida = async (grupo) => {
-    if (!confirm(`¿Iniciar proceso de salida para el grupo ${grupo.codigo}?`)) {
+  const openAnimalModal = (grupo) => {
+    setSelectedGrupo(grupo)
+    setAnimalSeleccionado('')
+    setShowAnimalModal(true)
+  }
+
+  const handleAsignarAnimal = async (e) => {
+    e.preventDefault()
+    
+    if (!animalSeleccionado) {
+      showToast('Selecciona un animal', 'error')
       return
     }
 
     try {
-      const result = await iniciarSalidaGrupo(grupo.id)
-      alert(result.message)
-      loadData()
-    } catch (err) {
-      alert('Error al iniciar salida: ' + err.message)
+      await asignarAnimalGrupo(parseInt(animalSeleccionado), selectedGrupo.id)
+      showToast('Animal asignado exitosamente', 'success')
+      setShowAnimalModal(false)
+      await loadData()
+    } catch (error) {
+      showToast(error.message || 'Error al asignar animal', 'error')
     }
   }
 
-  const handleCompletarSalida = (grupo) => {
-    setGrupoSeleccionado(grupo)
-    setTipoSalida('total')
-    setShowModalSalida(true)
-  }
+  // Filtrar animales disponibles (sin grupo)
+  const animalesDisponibles = animales.filter(a => !a.grupo_id && a.activo)
 
-  const handleSubmitSalida = async (e) => {
-    e.preventDefault()
-
-    try {
-      const result = await completarSalidaGrupo(grupoSeleccionado.id, tipoSalida)
-      alert(result.message)
-      setShowModalSalida(false)
-      loadData()
-    } catch (err) {
-      alert('Error al completar salida: ' + err.message)
-    }
-  }
-
-  // ============================================
-  // Funciones auxiliares
-  // ============================================
-  const gruposFiltrados = (grupos || []).filter((g) => {
-    const cumpleTipo = filtroTipo === 'todos' || g.tipo === filtroTipo
-    const cumpleEstado = filtroEstado === 'todos' || g.estado_calculado === filtroEstado
-    return cumpleTipo && cumpleEstado
-  })
-
-  const animalesDisponibles = (animales || []).filter((a) => {
-    // Solo mostrar animales del mismo tipo que el grupo y que no estén asignados
-    if (!grupoSeleccionado) return false
-    if (a.tipo !== grupoSeleccionado.tipo) return false
-    if (a.estado !== 'activo') return false
-    
-    // Verificar si el animal ya está asignado a algún grupo activo
-    // (esto se puede mejorar consultando al backend)
-    return true
-  })
-
-  const getProgressBarClass = (porcentaje) => {
-    if (porcentaje >= 100) return 'bg-danger'
-    if (porcentaje >= 80) return 'bg-warning'
-    if (porcentaje >= 50) return 'bg-info'
-    return 'bg-success'
-  }
-
-  // ============================================
-  // Renderizado
-  // ============================================
-  if (loading) {
+  const getEstadoBadge = (grupo) => {
+    const estadoInfo = getEstadoInfo(grupo.estado_calculado || grupo.estado)
     return (
-      <div className="container mt-4">
-        <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-          <p className="mt-2">Cargando grupos...</p>
-        </div>
-      </div>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${estadoInfo.color}-100 text-${estadoInfo.color}-800`}>
+        {estadoInfo.icon} {estadoInfo.label}
+      </span>
     )
   }
 
-  if (error) {
+  if (loading) {
     return (
-      <div className="container mt-4">
-        <div className="alert alert-danger" role="alert">
-          <h4 className="alert-heading">Error</h4>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadData}>
-            Reintentar
-          </button>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando grupos...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container-fluid mt-4 px-4">
-      {/* Header mejorado */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h2 className="mb-1">
-                <i className="bi bi-grid-3x3-gap-fill text-primary me-2"></i>
-                Grupos y Corrales
-              </h2>
-              <p className="text-muted mb-0">Gestión de grupos con control de estados</p>
-            </div>
-            <button className="btn btn-primary btn-lg shadow-sm" onClick={handleNuevoGrupo}>
-              <i className="bi bi-plus-circle me-2"></i>
-              Nuevo Grupo
-            </button>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Package className="w-8 h-8 text-blue-600" />
+            Gestión de Grupos y Corrales
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Administra grupos de engorde y reproducción
+          </p>
         </div>
+        {canEdit && (
+          <Button onClick={() => openModal()} className="flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            Nuevo Grupo
+          </Button>
+        )}
       </div>
 
-      {/* Filtros mejorados */}
-      <div className="card mb-4 shadow-sm border-0">
-        <div className="card-body">
-          <div className="row g-3 align-items-center">
-            {/* Filtro por Tipo */}
-            <div className="col-md-4">
-              <label className="form-label fw-bold mb-1">
-                <i className="bi bi-funnel me-1"></i>
-                Tipo de Grupo
-              </label>
-              <select
-                className="form-select"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-              >
-                <option value="todos">Todos los tipos</option>
-                <option value="engorde">🐖 Engorde</option>
-                <option value="reproduccion">🐷 Reproducción</option>
-              </select>
-            </div>
-
-            {/* Filtro por Estado */}
-            <div className="col-md-4">
-              <label className="form-label fw-bold mb-1">
-                <i className="bi bi-diagram-3 me-1"></i>
-                Estado del Grupo
-              </label>
-              <select
-                className="form-select"
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-              >
-                <option value="todos">Todos los estados</option>
-                <option value="en_creacion">📝 En Creación</option>
-                <option value="incompleto">⏳ Incompleto</option>
-                <option value="completo">✅ Completo</option>
-                <option value="programado_salida">📅 Programado para Salida</option>
-                <option value="en_proceso_salida">🚪 En Proceso de Salida</option>
-                <option value="cerrado">🔒 Cerrado</option>
-                <option value="inactivo">❌ Inactivo</option>
-              </select>
-            </div>
-
-            {/* Estadísticas */}
-            <div className="col-md-4">
-              <label className="form-label fw-bold mb-1">Resumen</label>
-              <div className="d-flex flex-wrap gap-2">
-                <span className="badge bg-primary py-2 px-3">
-                  <i className="bi bi-box me-1"></i>
-                  Total: {gruposFiltrados.length}
-                </span>
-                <span className="badge bg-success py-2 px-3">
-                  <i className="bi bi-check-circle me-1"></i>
-                  Activos: {gruposFiltrados.filter((g) => g.activo).length}
-                </span>
-                <span className="badge bg-info py-2 px-3">
-                  <i className="bi bi-piggy-bank me-1"></i>
-                  Animales: {gruposFiltrados.reduce((sum, g) => sum + (g.cantidad_actual || 0), 0)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista de grupos mejorada */}
-      {gruposFiltrados.length === 0 ? (
-        <div className="alert alert-info border-0 shadow-sm">
-          <div className="d-flex align-items-center">
-            <i className="bi bi-info-circle fs-3 me-3"></i>
-            <div>
-              <h5 className="alert-heading mb-1">No hay grupos para mostrar</h5>
-              <p className="mb-0">
-                {filtroTipo === 'todos' && filtroEstado === 'todos'
-                  ? 'No hay grupos registrados. Cree uno nuevo para comenzar.'
-                  : 'No hay grupos que coincidan con los filtros seleccionados.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="row g-4">
-          {gruposFiltrados.map((grupo) => {
-            const ocupacion = calcularOcupacion(grupo.cantidad_actual, grupo.capacidad)
-            const estadoInfo = getEstadoInfo(grupo.estado_calculado || grupo.estado)
-
-            return (
-              <div key={grupo.id} className="col-xl-4 col-lg-6 col-md-12">
-                <div className="card h-100 shadow-sm border-0 hover-shadow" style={{ transition: 'all 0.3s' }}>
-                  {/* Header de la card con estado */}
-                  <div className={`card-header bg-gradient text-white d-flex justify-content-between align-items-center`}
-                       style={{ background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` }}>
-                    <div>
-                      <h5 className="mb-0">
-                        <span className="badge bg-light text-dark me-2">{grupo.codigo}</span>
-                        {grupo.nombre || 'Sin nombre'}
-                      </h5>
-                      <small className="opacity-75">
-                        {grupo.corral_numero && `Corral #${grupo.corral_numero}`}
-                      </small>
-                    </div>
-                    <span className={`badge bg-${estadoInfo.color} fs-6 px-3 py-2`}>
-                      {estadoInfo.icon} {estadoInfo.label}
-                    </span>
-                  </div>
-
-                  <div className="card-body">
-                    {/* Tipo */}
-                    <div className="mb-3">
-                      <span className={`badge ${grupo.tipo === 'engorde' ? 'bg-info' : 'bg-warning'} px-3 py-2`}>
-                        {grupo.tipo === 'engorde' ? '🐖 Engorde' : '🐷 Reproducción'}
+      {/* Lista de Grupos */}
+      <Card>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Código
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ocupación
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {grupos.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                    No hay grupos registrados
+                  </td>
+                </tr>
+              ) : (
+                grupos.map((grupo) => (
+                  <tr key={grupo.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {grupo.codigo}
+                      </div>
+                      {grupo.corral_numero && (
+                        <div className="text-sm text-gray-500">
+                          Corral: {grupo.corral_numero}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {grupo.nombre || '-'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        grupo.tipo === 'engorde' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                      }`}>
+                        {grupo.tipo === 'engorde' ? '🐷 Engorde' : '❤️ Reproducción'}
                       </span>
-                    </div>
-
-                    {/* Capacidad con barra de progreso mejorada */}
-                    <div className="mb-3">
-                      <div className="d-flex justify-content-between mb-2">
-                        <small className="text-muted fw-bold">Ocupación</small>
-                        <small className="fw-bold">
-                          {grupo.cantidad_actual || 0}/{grupo.capacidad} ({ocupacion}%)
-                        </small>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getEstadoBadge(grupo)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {grupo.cantidad_actual || 0} / {grupo.capacidad}
                       </div>
-                      <div className="progress" style={{ height: '12px' }}>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                         <div
-                          className={`progress-bar ${
-                            ocupacion >= 100 ? 'bg-danger' :
-                            ocupacion >= 80 ? 'bg-warning' :
-                            ocupacion >= 50 ? 'bg-info' : 'bg-success'
-                          }`}
-                          role="progressbar"
-                          style={{ width: `${ocupacion}%` }}
-                          aria-valuenow={ocupacion}
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                        >
-                          {ocupacion}%
-                        </div>
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{ width: `${((grupo.cantidad_actual || 0) / grupo.capacidad) * 100}%` }}
+                        ></div>
                       </div>
-                    </div>
-
-                    {/* Alertas de fecha de salida */}
-                    {grupo.dias_hasta_salida !== null && grupo.dias_hasta_salida <= 7 && (
-                      <div className={`alert ${grupo.dias_hasta_salida <= 3 ? 'alert-danger' : 'alert-warning'} py-2 mb-3`}>
-                        <small className="mb-0">
-                          <i className="bi bi-exclamation-triangle me-1"></i>
-                          <strong>Salida en {grupo.dias_hasta_salida} días</strong>
-                          {grupo.fecha_salida_programada && ` - ${formatearFecha(grupo.fecha_salida_programada)}`}
-                        </small>
-                      </div>
-                    )}
-
-                    {/* Información adicional */}
-                    <div className="row g-2 mb-3 text-muted small">
-                      <div className="col-6">
-                        <i className="bi bi-calendar-event me-1"></i>
-                        <strong>Creación:</strong><br/>
-                        {formatearFecha(grupo.fecha_creacion)}
-                      </div>
-                      {grupo.fecha_salida_programada && (
-                        <div className="col-6">
-                          <i className="bi bi-calendar-check me-1"></i>
-                          <strong>Salida:</strong><br/>
-                          {formatearFecha(grupo.fecha_salida_programada)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Notas */}
-                    {grupo.notas && (
-                      <div className="mb-3">
-                        <small className="text-muted">
-                          <i className="bi bi-sticky me-1"></i>
-                          {grupo.notas}
-                        </small>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer con acciones según estado */}
-                  <div className="card-footer bg-light border-0">
-                    <div className="d-flex gap-2 flex-wrap">
-                      {/* Botones según estado del diagrama UML */}
-                      {grupo.estado_calculado === 'en_creacion' && (
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      {/* Botón Confirmar (solo si está en_creacion) */}
+                      {grupo.estado === 'en_creacion' && canEdit && (
                         <button
-                          className="btn btn-sm btn-primary"
                           onClick={() => handleConfirmarGrupo(grupo)}
+                          className="text-green-600 hover:text-green-900"
+                          title="Confirmar grupo"
                         >
-                          <i className="bi bi-check-circle me-1"></i>
-                          Confirmar Grupo
+                          <CheckCircle className="w-5 h-5 inline" />
                         </button>
                       )}
-
-                      {(grupo.estado_calculado === 'incompleto' || grupo.estado_calculado === 'completo') && (
-                        <>
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() => handleAsignarAnimal(grupo)}
-                            disabled={!puedeAsignarAnimal(grupo)}
-                          >
-                            <i className="bi bi-plus-circle me-1"></i>
-                            Agregar Animal
-                          </button>
-                          <button
-                            className="btn btn-sm btn-info"
-                            onClick={() => handleVerAnimales(grupo)}
-                            disabled={grupo.cantidad_actual === 0}
-                          >
-                            <i className="bi bi-list-ul me-1"></i>
-                            Ver Animales ({grupo.cantidad_actual || 0})
-                          </button>
-                        </>
-                      )}
-
-                      {grupo.estado_calculado === 'programado_salida' && (
+                      
+                      {/* Botón Agregar Animal (si está confirmado y no está lleno) */}
+                      {(grupo.estado === 'incompleto' || grupo.estado === 'completo') && 
+                       (grupo.cantidad_actual || 0) < grupo.capacidad && canEdit && (
                         <button
-                          className="btn btn-sm btn-warning"
-                          onClick={() => handleIniciarSalida(grupo)}
+                          onClick={() => openAnimalModal(grupo)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Agregar animal"
                         >
-                          <i className="bi bi-door-open me-1"></i>
-                          Iniciar Salida
+                          <Users className="w-5 h-5 inline" />
                         </button>
                       )}
-
-                      {grupo.estado_calculado === 'en_proceso_salida' && (
+                      
+                      {canEdit && (
                         <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => handleCompletarSalida(grupo)}
+                          onClick={() => openModal(grupo)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                          title="Editar"
                         >
-                          <i className="bi bi-check2-square me-1"></i>
-                          Completar Salida
+                          <Edit2 className="w-5 h-5 inline" />
                         </button>
                       )}
-
-                      {/* Botones comunes */}
-                      {grupo.estado_calculado !== 'cerrado' && (
-                        <>
-                          <button
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => handleEditarGrupo(grupo)}
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleEliminarGrupo(grupo)}
-                            disabled={grupo.cantidad_actual > 0}
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Modal Crear/Editar Grupo */}
-      {showModalGrupo && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content border-0" style={{ borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
-              {/* Header */}
-              <div className="modal-header border-0 pb-0" style={{ padding: '2rem 2rem 0 2rem' }}>
-                <div>
-                  <h4 className="mb-1" style={{ color: '#2c3e50', fontWeight: '600' }}>
-                    {grupoActual ? (
-                      <>
-                        <i className="bi bi-pencil-square me-2" style={{ color: '#1976d2' }}></i>
-                        Editar Grupo
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-plus-circle me-2" style={{ color: '#388e3c' }}></i>
-                        Nuevo Grupo
-                      </>
-                    )}
-                  </h4>
-                  <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                    {grupoActual ? 'Modifica la información del grupo' : 'Estado inicial: En Creación'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModalGrupo(false)}
-                  style={{ fontSize: '0.9rem' }}
-                ></button>
-              </div>
-
-              <form onSubmit={handleSubmitGrupo}>
-                <div className="modal-body" style={{ padding: '2rem' }}>
-                  {/* Sección 1: Identificación */}
-                  <div className="mb-4">
-                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      <i className="bi bi-tag me-2" style={{ color: '#1976d2' }}></i>
-                      Identificación
-                    </h6>
-                    <div className="row g-3">
-                      <div className="col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Código <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="codigo"
-                          value={formData.codigo}
-                          readOnly
-                          required
-                          style={{ 
-                            backgroundColor: '#f8f9fa', 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                      </div>
-                      <div className="col-md-8">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Nombre del Grupo
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="nombre"
-                          value={formData.nombre}
-                          onChange={handleInputChange}
-                          placeholder="Ej: Grupo Norte, Lote A, etc."
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sección 2: Configuración */}
-                  <div className="mb-4">
-                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      <i className="bi bi-gear me-2" style={{ color: '#388e3c' }}></i>
-                      Configuración
-                    </h6>
-                    <div className="row g-3">
-                      <div className="col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Tipo <span className="text-danger">*</span>
-                        </label>
-                        <select
-                          className="form-select"
-                          name="tipo"
-                          value={formData.tipo}
-                          onChange={handleInputChange}
-                          required
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(grupo)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Eliminar"
                         >
-                          <option value="engorde">🐷 Engorde</option>
-                          <option value="reproduccion">❤️ Reproducción</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Capacidad <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          name="capacidad"
-                          value={formData.capacidad}
-                          onChange={handleInputChange}
-                          min="1"
-                          max={formData.tipo === 'engorde' ? 10 : 5}
-                          required
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                          {formData.tipo === 'engorde' ? 'Máx: 10 animales' : 'Máx: 5 reproductoras'}
-                        </small>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          N° Corral
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="corral_numero"
-                          value={formData.corral_numero}
-                          onChange={handleInputChange}
-                          placeholder="C-01"
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sección 3: Fechas */}
-                  <div className="mb-4">
-                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      <i className="bi bi-calendar-event me-2" style={{ color: '#f57c00' }}></i>
-                      Programación
-                    </h6>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Fecha de Creación
-                        </label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          name="fecha_creacion"
-                          value={formData.fecha_creacion}
-                          onChange={handleInputChange}
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
-                          Fecha Salida Programada
-                        </label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          name="fecha_salida_programada"
-                          value={formData.fecha_salida_programada}
-                          onChange={handleInputChange}
-                          min={formData.fecha_creacion}
-                          style={{ 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        />
-                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                          <i className="bi bi-info-circle me-1"></i>
-                          Alerta automática 7 días antes
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sección 4: Notas */}
-                  <div className="mb-3">
-                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      <i className="bi bi-sticky me-2" style={{ color: '#9e9e9e' }}></i>
-                      Observaciones
-                    </h6>
-                    <textarea
-                      className="form-control"
-                      name="notas"
-                      value={formData.notas}
-                      onChange={handleInputChange}
-                      rows="3"
-                      placeholder="Agrega notas u observaciones adicionales..."
-                      style={{ 
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        resize: 'none'
-                      }}
-                    ></textarea>
-                  </div>
-
-                  {/* Info del diagrama de estados */}
-                  {!grupoActual && (
-                    <div className="alert alert-info mb-0" style={{ 
-                      backgroundColor: '#e3f2fd',
-                      border: '1px solid #90caf9',
-                      borderRadius: '8px',
-                      fontSize: '0.85rem'
-                    }}>
-                      <i className="bi bi-info-circle me-2"></i>
-                      <strong>Estado inicial:</strong> El grupo se creará en estado <strong>"En Creación"</strong>. 
-                      Después deberás confirmar el grupo y agregar animales.
-                    </div>
-                  )}
-                </div>
-
-                <div className="modal-footer border-0" style={{ padding: '0 2rem 2rem 2rem' }}>
-                  <button
-                    type="button"
-                    className="btn btn-light px-4"
-                    onClick={() => setShowModalGrupo(false)}
-                    style={{ 
-                      borderRadius: '8px',
-                      border: '1px solid #e0e0e0',
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary px-4"
-                    style={{ 
-                      borderRadius: '8px',
-                      fontSize: '0.9rem',
-                      backgroundColor: grupoActual ? '#1976d2' : '#388e3c',
-                      border: 'none'
-                    }}
-                  >
-                    <i className={`bi ${grupoActual ? 'bi-check-circle' : 'bi-plus-lg'} me-2`}></i>
-                    {grupoActual ? 'Actualizar' : 'Crear'} Grupo
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+                          <Trash2 className="w-5 h-5 inline" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </Card>
 
-      {/* Modal Ver Animales del Grupo */}
-      {showModalAnimales && grupoSeleccionado && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  Animales del Grupo {grupoSeleccionado.codigo}
-                </h5>
+      {/* Modal Crear/Editar Grupo - Ventana Emergente Centrada */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+          onClick={closeModal}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              animation: 'modalSlideIn 0.3s ease-out'
+            }}
+          >
+            {/* Header del Modal */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Package className="w-6 h-6" />
+                  {editingItem ? 'Editar Grupo' : 'Crear Nuevo Grupo'}
+                </h2>
                 <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModalAnimales(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                {animalesGrupo.length === 0 ? (
-                  <div className="alert alert-info">
-                    No hay animales asignados a este grupo
-                  </div>
-                ) : (
-                  <div className="table-responsive">
-                    <table className="table table-hover">
-                      <thead>
-                        <tr>
-                          <th>Código</th>
-                          <th>Raza</th>
-                          <th>Sexo</th>
-                          <th>Peso Actual</th>
-                          <th>Fecha Ingreso</th>
-                          <th>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {animalesGrupo.map((animal) => (
-                          <tr key={animal.id}>
-                            <td>
-                              <strong>{animal.codigo}</strong>
-                            </td>
-                            <td>{animal.raza}</td>
-                            <td>
-                              <span className={`badge ${animal.sexo === 'macho' ? 'bg-primary' : 'bg-pink'}`}>
-                                {animal.sexo}
-                              </span>
-                            </td>
-                            <td>{animal.peso_actual ? `${animal.peso_actual} kg` : '-'}</td>
-                            <td>{formatearFecha(animal.fecha_ingreso)}</td>
-                            <td>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleRemoverAnimal(animal.id)}
-                              >
-                                <i className="bi bi-x-circle"></i> Remover
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModalAnimales(false)}
+                  onClick={closeModal}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
                 >
-                  Cerrar
+                  <XCircle className="w-6 h-6" />
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Modal Asignar Animal - Rediseñado */}
-      {showModalAsignar && grupoSeleccionado && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0" style={{ borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
-              <div className="modal-header border-0 pb-0" style={{ padding: '2rem 2rem 0 2rem' }}>
-                <div>
-                  <h4 className="mb-1" style={{ color: '#2c3e50', fontWeight: '600' }}>
-                    <i className="bi bi-plus-circle me-2" style={{ color: '#388e3c' }}></i>
-                    Asignar Animal
-                  </h4>
-                  <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                    Grupo {grupoSeleccionado.codigo} - {grupoSeleccionado.nombre || 'Sin nombre'}
-                  </p>
+            {/* Contenido del Modal */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Sección: Información Básica */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-blue-600 rounded"></div>
+                  Información Básica
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.codigo}
+                      readOnly
+                      className="block w-full rounded-lg border-gray-300 bg-gray-50 shadow-sm text-gray-600 font-mono text-sm px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nombre del Grupo
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                      placeholder="Ej: Grupo Primavera"
+                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                    />
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModalAsignar(false)}
-                ></button>
               </div>
 
-              <form onSubmit={handleSubmitAsignar}>
-                <div className="modal-body" style={{ padding: '2rem' }}>
-                  {/* Info del grupo */}
-                  <div className="row g-3 mb-4">
-                    <div className="col-6">
-                      <div className="p-3 rounded" style={{ backgroundColor: '#e3f2fd' }}>
-                        <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Tipo</small>
-                        <div className="d-flex align-items-center">
-                          <i className={`bi ${grupoSeleccionado.tipo === 'engorde' ? 'bi-piggy-bank' : 'bi-heart-fill'} me-2`} style={{ color: '#1976d2', fontSize: '1.2rem' }}></i>
-                          <span className="fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
-                            {grupoSeleccionado.tipo === 'engorde' ? 'Engorde' : 'Reproducción'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-6">
-                      <div className="p-3 rounded" style={{ backgroundColor: '#e8f5e9' }}>
-                        <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Disponibles</small>
-                        <div className="d-flex align-items-center">
-                          <i className="bi bi-check-circle me-2" style={{ color: '#388e3c', fontSize: '1.2rem' }}></i>
-                          <span className="fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
-                            {grupoSeleccionado.capacidad - (grupoSeleccionado.cantidad_actual || 0)} espacios
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Selector de animal */}
-                  <div className="mb-3">
-                    <label className="form-label" style={{ fontSize: '0.9rem', fontWeight: '600', color: '#2c3e50' }}>
-                      Seleccionar Animal <span className="text-danger">*</span>
+              {/* Sección: Configuración */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-green-600 rounded"></div>
+                  Configuración
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo de Grupo <span className="text-red-500">*</span>
                     </label>
                     <select
-                      className="form-select"
-                      value={animalSeleccionado}
-                      onChange={(e) => setAnimalSeleccionado(e.target.value)}
+                      value={formData.tipo}
+                      onChange={(e) => setFormData({...formData, tipo: e.target.value, capacidad: e.target.value === 'engorde' ? 10 : 5})}
+                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
                       required
-                      style={{ 
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        padding: '0.75rem'
-                      }}
                     >
-                      <option value="">-- Seleccione un animal --</option>
-                      {animalesDisponibles.map((animal) => (
-                        <option key={animal.id} value={animal.id}>
-                          {animal.codigo} | {animal.raza} | {animal.sexo === 'macho' ? '♂' : '♀'}
-                          {animal.peso_actual && ` | ${animal.peso_actual} kg`}
-                        </option>
-                      ))}
+                      <option value="engorde">🐷 Engorde</option>
+                      <option value="reproduccion">❤️ Reproducción</option>
                     </select>
-                    
-                    {animalesDisponibles.length === 0 ? (
-                      <div className="alert alert-warning mt-3 mb-0" style={{ 
-                        backgroundColor: '#fff3e0',
-                        border: '1px solid #f57c00',
-                        borderRadius: '8px',
-                        fontSize: '0.85rem'
-                      }}>
-                        <i className="bi bi-exclamation-triangle me-2"></i>
-                        No hay animales disponibles sin grupo asignado
-                      </div>
-                    ) : (
-                      <small className="text-muted mt-2 d-block" style={{ fontSize: '0.8rem' }}>
-                        <i className="bi bi-info-circle me-1"></i>
-                        {animalesDisponibles.length} animal(es) disponible(s)
-                      </small>
-                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Capacidad <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.capacidad}
+                      onChange={(e) => setFormData({...formData, capacidad: e.target.value})}
+                      min="1"
+                      max={formData.tipo === 'engorde' ? 10 : 5}
+                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                      <span className="inline-block w-1 h-1 bg-gray-400 rounded-full"></span>
+                      Máximo: {formData.tipo === 'engorde' ? 10 : 5} animales
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="modal-footer border-0" style={{ padding: '0 2rem 2rem 2rem' }}>
-                  <button
-                    type="button"
-                    className="btn btn-light px-4"
-                    onClick={() => setShowModalAsignar(false)}
-                    style={{ 
-                      borderRadius: '8px',
-                      border: '1px solid #e0e0e0',
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-success px-4"
-                    disabled={!animalSeleccionado || animalesDisponibles.length === 0}
-                    style={{ 
-                      borderRadius: '8px',
-                      fontSize: '0.9rem',
-                      backgroundColor: '#388e3c',
-                      border: 'none'
-                    }}
-                  >
-                    <i className="bi bi-check-lg me-2"></i>
-                    Asignar Animal
-                  </button>
+              {/* Sección: Ubicación y Fechas */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-purple-600 rounded"></div>
+                  Ubicación y Fechas
+                </h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Número de Corral
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.corral_numero}
+                        onChange={(e) => setFormData({...formData, corral_numero: e.target.value})}
+                        placeholder="Ej: C-101"
+                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Creación
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.fecha_creacion}
+                        onChange={(e) => setFormData({...formData, fecha_creacion: e.target.value})}
+                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fecha de Salida Programada
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.fecha_salida_programada}
+                      onChange={(e) => setFormData({...formData, fecha_salida_programada: e.target.value})}
+                      min={formData.fecha_creacion}
+                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                    />
+                  </div>
                 </div>
-              </form>
-            </div>
+              </div>
+
+              {/* Sección: Notas */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-orange-600 rounded"></div>
+                  Notas Adicionales
+                </h3>
+                <textarea
+                  value={formData.notas}
+                  onChange={(e) => setFormData({...formData, notas: e.target.value})}
+                  rows="3"
+                  placeholder="Escribe notas o comentarios sobre este grupo..."
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all px-3 py-2"
+                />
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all flex items-center gap-2"
+                >
+                  {editingItem ? (
+                    <>
+                      <Edit2 className="w-4 h-4" />
+                      Actualizar Grupo
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Crear Grupo
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Modal Completar Salida */}
-      {showModalSalida && grupoSeleccionado && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <form onSubmit={handleSubmitSalida}>
-                <div className="modal-header bg-warning text-white">
-                  <h5 className="modal-title">
-                    <i className="bi bi-door-open me-2"></i>
-                    Completar Salida - {grupoSeleccionado.codigo}
-                  </h5>
-                  <button
-                    type="button"
-                    className="btn-close btn-close-white"
-                    onClick={() => setShowModalSalida(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <div className="alert alert-warning">
-                    <i className="bi bi-exclamation-triangle me-2"></i>
-                    <strong>¿Tipo de salida?</strong>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Seleccione el tipo de salida:</label>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="tipoSalida"
-                        id="salidaTotal"
-                        value="total"
-                        checked={tipoSalida === 'total'}
-                        onChange={(e) => setTipoSalida(e.target.value)}
-                      />
-                      <label className="form-check-label" htmlFor="salidaTotal">
-                        <strong>Salida Total</strong>
-                        <br />
-                        <small className="text-muted">
-                          Todos los animales salen y el grupo se cierra permanentemente.
-                        </small>
-                      </label>
-                    </div>
-                    <div className="form-check mt-2">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="tipoSalida"
-                        id="salidaParcial"
-                        value="parcial"
-                        checked={tipoSalida === 'parcial'}
-                        onChange={(e) => setTipoSalida(e.target.value)}
-                      />
-                      <label className="form-check-label" htmlFor="salidaParcial">
-                        <strong>Salida Parcial</strong>
-                        <br />
-                        <small className="text-muted">
-                          Algunos animales salen, el grupo vuelve a estado incompleto/completo según capacidad.
-                        </small>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="alert alert-info">
-                    <small>
-                      <strong>Animales actuales:</strong> {grupoSeleccionado.cantidad_actual} de {grupoSeleccionado.capacidad}
-                    </small>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModalSalida(false)}
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="btn btn-warning">
-                    <i className="bi bi-check2-square me-1"></i>
-                    Completar Salida {tipoSalida === 'total' ? 'Total' : 'Parcial'}
-                  </button>
-                </div>
-              </form>
+      {/* Modal Asignar Animal - Ventana Emergente Centrada */}
+      {showAnimalModal && selectedGrupo && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAnimalModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              animation: 'modalSlideIn 0.3s ease-out'
+            }}
+          >
+            {/* Header del Modal */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  Asignar Animal
+                </h2>
+                <button
+                  onClick={() => setShowAnimalModal(false)}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+              <p className="text-green-100 text-sm mt-1">
+                Grupo: <span className="font-semibold">{selectedGrupo.codigo}</span>
+                {selectedGrupo.nombre && ` - ${selectedGrupo.nombre}`}
+              </p>
             </div>
+
+            {/* Contenido del Modal */}
+            <form onSubmit={handleAsignarAnimal} className="p-6 space-y-5">
+              {/* Info del Grupo */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Tipo:</span>
+                    <span className="ml-2 font-semibold text-gray-900">
+                      {selectedGrupo.tipo === 'engorde' ? '🐷 Engorde' : '❤️ Reproducción'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Ocupación:</span>
+                    <span className="ml-2 font-semibold text-gray-900">
+                      {selectedGrupo.cantidad_actual || 0} / {selectedGrupo.capacidad}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-600">Espacios disponibles:</span>
+                    <span className="ml-2 font-bold text-green-600">
+                      {selectedGrupo.capacidad - (selectedGrupo.cantidad_actual || 0)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selector de Animal */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Seleccionar Animal <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={animalSeleccionado}
+                  onChange={(e) => setAnimalSeleccionado(e.target.value)}
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all px-3 py-2.5"
+                  required
+                >
+                  <option value="">-- Seleccione un animal --</option>
+                  {animalesDisponibles.map(animal => (
+                    <option key={animal.id} value={animal.id}>
+                      {animal.codigo} - {animal.raza} ({animal.sexo === 'M' ? 'Macho' : 'Hembra'})
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Info de Animales Disponibles */}
+                <div className="mt-3 flex items-center gap-2">
+                  {animalesDisponibles.length > 0 ? (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="font-medium">{animalesDisponibles.length} animales disponibles</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-orange-600">
+                      <XCircle className="w-4 h-4" />
+                      <span className="font-medium">No hay animales disponibles sin grupo</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAnimalModal(false)}
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={animalesDisponibles.length === 0}
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all flex items-center gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  Asignar Animal
+                </button>
+              </div>
+            </form>
           </div>
         </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+        />
       )}
     </div>
   )
