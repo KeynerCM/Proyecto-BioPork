@@ -50,7 +50,7 @@ function Reproduction({ user }) {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [ciclosResponse, partosResponse, animResponse] = await Promise.all([
+      const [ciclosResponse, partosResponse, animales] = await Promise.all([
         cicloReproductivoService.getAll(),
         partoService.getAll(),
         animalService.getAll()
@@ -59,9 +59,10 @@ function Reproduction({ user }) {
       console.log('🔍 DEBUG Reproduction - Respuestas recibidas:')
       console.log('Ciclos:', ciclosResponse)
       console.log('Partos:', partosResponse)
-      console.log('Animales:', animResponse)
+      console.log('Animales:', animales)
       
-      if (!ciclosResponse.success || !partosResponse.success || !animResponse.success) {
+      // Validar respuestas - animales es un array directo, no tiene .success
+      if (!ciclosResponse.success || !partosResponse.success || !Array.isArray(animales)) {
         console.error('❌ Alguna respuesta no fue exitosa')
         throw new Error('Error al obtener datos del servidor')
       }
@@ -69,12 +70,12 @@ function Reproduction({ user }) {
       console.log('✅ Datos a establecer:')
       console.log('- Ciclos:', ciclosResponse.data?.length || 0, 'registros')
       console.log('- Partos:', partosResponse.data?.length || 0, 'registros')
-      console.log('- Animales:', animResponse.data?.length || 0, 'registros')
-      console.log('- Animales detalle:', animResponse.data)
+      console.log('- Animales:', animales.length, 'registros')
+      console.log('- Animales detalle:', animales)
       
       setCiclos(ciclosResponse.data || [])
       setPartos(partosResponse.data || [])
-      setAnimales(animResponse.data || [])
+      setAnimales(animales)
     } catch (error) {
       console.error('Error loading reproduction data:', error)
       showToast(error.response?.data?.error || 'Error al cargar los datos', 'error')
