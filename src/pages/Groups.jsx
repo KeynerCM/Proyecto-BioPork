@@ -642,140 +642,267 @@ const Groups = () => {
 
       {/* Modal Crear/Editar Grupo */}
       {showModalGrupo && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {grupoActual ? 'Editar Grupo' : 'Nuevo Grupo'}
-                </h5>
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content border-0" style={{ borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+              {/* Header */}
+              <div className="modal-header border-0 pb-0" style={{ padding: '2rem 2rem 0 2rem' }}>
+                <div>
+                  <h4 className="mb-1" style={{ color: '#2c3e50', fontWeight: '600' }}>
+                    {grupoActual ? (
+                      <>
+                        <i className="bi bi-pencil-square me-2" style={{ color: '#1976d2' }}></i>
+                        Editar Grupo
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-plus-circle me-2" style={{ color: '#388e3c' }}></i>
+                        Nuevo Grupo
+                      </>
+                    )}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+                    {grupoActual ? 'Modifica la información del grupo' : 'Estado inicial: En Creación'}
+                  </p>
+                </div>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowModalGrupo(false)}
+                  style={{ fontSize: '0.9rem' }}
                 ></button>
               </div>
+
               <form onSubmit={handleSubmitGrupo}>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">
-                        Código <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="codigo"
-                        value={formData.codigo}
-                        readOnly
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Nombre</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="nombre"
-                        value={formData.nombre}
-                        onChange={handleInputChange}
-                        placeholder="Ej: Grupo Norte"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">
-                        Tipo <span className="text-danger">*</span>
-                      </label>
-                      <select
-                        className="form-select"
-                        name="tipo"
-                        value={formData.tipo}
-                        onChange={handleInputChange}
-                        required
-                      >
-                        <option value="engorde">Engorde</option>
-                        <option value="reproduccion">Reproducción</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Número de Corral</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="corral_numero"
-                        value={formData.corral_numero}
-                        onChange={handleInputChange}
-                        placeholder="Ej: C-01"
-                      />
+                <div className="modal-body" style={{ padding: '2rem' }}>
+                  {/* Sección 1: Identificación */}
+                  <div className="mb-4">
+                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <i className="bi bi-tag me-2" style={{ color: '#1976d2' }}></i>
+                      Identificación
+                    </h6>
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Código <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="codigo"
+                          value={formData.codigo}
+                          readOnly
+                          required
+                          style={{ 
+                            backgroundColor: '#f8f9fa', 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
+                      <div className="col-md-8">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Nombre del Grupo
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="nombre"
+                          value={formData.nombre}
+                          onChange={handleInputChange}
+                          placeholder="Ej: Grupo Norte, Lote A, etc."
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">
-                        Capacidad <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        name="capacidad"
-                        value={formData.capacidad}
-                        onChange={handleInputChange}
-                        min="1"
-                        required
-                      />
-                      <small className="text-muted">
-                        Recomendado: 10 para engorde, 5 para reproducción
-                      </small>
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Fecha de Creación</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="fecha_creacion"
-                        value={formData.fecha_creacion}
-                        onChange={handleInputChange}
-                      />
+                  {/* Sección 2: Configuración */}
+                  <div className="mb-4">
+                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <i className="bi bi-gear me-2" style={{ color: '#388e3c' }}></i>
+                      Configuración
+                    </h6>
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Tipo <span className="text-danger">*</span>
+                        </label>
+                        <select
+                          className="form-select"
+                          name="tipo"
+                          value={formData.tipo}
+                          onChange={handleInputChange}
+                          required
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <option value="engorde">🐷 Engorde</option>
+                          <option value="reproduccion">❤️ Reproducción</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Capacidad <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="capacidad"
+                          value={formData.capacidad}
+                          onChange={handleInputChange}
+                          min="1"
+                          max={formData.tipo === 'engorde' ? 10 : 5}
+                          required
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                          {formData.tipo === 'engorde' ? 'Máx: 10 animales' : 'Máx: 5 reproductoras'}
+                        </small>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          N° Corral
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="corral_numero"
+                          value={formData.corral_numero}
+                          onChange={handleInputChange}
+                          placeholder="C-01"
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Fecha Salida Programada</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="fecha_salida_programada"
-                        value={formData.fecha_salida_programada}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Notas</label>
-                      <textarea
-                        className="form-control"
-                        name="notas"
-                        value={formData.notas}
-                        onChange={handleInputChange}
-                        rows="3"
-                        placeholder="Observaciones adicionales..."
-                      ></textarea>
+                  {/* Sección 3: Fechas */}
+                  <div className="mb-4">
+                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <i className="bi bi-calendar-event me-2" style={{ color: '#f57c00' }}></i>
+                      Programación
+                    </h6>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Fecha de Creación
+                        </label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="fecha_creacion"
+                          value={formData.fecha_creacion}
+                          onChange={handleInputChange}
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: '500', color: '#555' }}>
+                          Fecha Salida Programada
+                        </label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="fecha_salida_programada"
+                          value={formData.fecha_salida_programada}
+                          onChange={handleInputChange}
+                          min={formData.fecha_creacion}
+                          style={{ 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                          <i className="bi bi-info-circle me-1"></i>
+                          Alerta automática 7 días antes
+                        </small>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Sección 4: Notas */}
+                  <div className="mb-3">
+                    <h6 className="mb-3" style={{ color: '#2c3e50', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <i className="bi bi-sticky me-2" style={{ color: '#9e9e9e' }}></i>
+                      Observaciones
+                    </h6>
+                    <textarea
+                      className="form-control"
+                      name="notas"
+                      value={formData.notas}
+                      onChange={handleInputChange}
+                      rows="3"
+                      placeholder="Agrega notas u observaciones adicionales..."
+                      style={{ 
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        fontSize: '0.9rem',
+                        resize: 'none'
+                      }}
+                    ></textarea>
+                  </div>
+
+                  {/* Info del diagrama de estados */}
+                  {!grupoActual && (
+                    <div className="alert alert-info mb-0" style={{ 
+                      backgroundColor: '#e3f2fd',
+                      border: '1px solid #90caf9',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem'
+                    }}>
+                      <i className="bi bi-info-circle me-2"></i>
+                      <strong>Estado inicial:</strong> El grupo se creará en estado <strong>"En Creación"</strong>. 
+                      Después deberás confirmar el grupo y agregar animales.
+                    </div>
+                  )}
                 </div>
-                <div className="modal-footer">
+
+                <div className="modal-footer border-0" style={{ padding: '0 2rem 2rem 2rem' }}>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-light px-4"
                     onClick={() => setShowModalGrupo(false)}
+                    style={{ 
+                      borderRadius: '8px',
+                      border: '1px solid #e0e0e0',
+                      fontSize: '0.9rem'
+                    }}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary px-4"
+                    style={{ 
+                      borderRadius: '8px',
+                      fontSize: '0.9rem',
+                      backgroundColor: grupoActual ? '#1976d2' : '#388e3c',
+                      border: 'none'
+                    }}
+                  >
+                    <i className={`bi ${grupoActual ? 'bi-check-circle' : 'bi-plus-lg'} me-2`}></i>
                     {grupoActual ? 'Actualizar' : 'Crear'} Grupo
                   </button>
                 </div>
