@@ -13,15 +13,27 @@ exports.handler = async (event, context) => {
     const data = JSON.parse(event.body)
     const { codigo, tipo, raza, fecha_nacimiento, peso_inicial, peso_actual, sexo, estado, grupo_id } = data
 
-    console.log('📥 Datos recibidos para crear animal:', data)
+    console.log('📥 Datos recibidos para crear animal:', JSON.stringify(data, null, 2))
 
-    // Validaciones básicas
-    if (!codigo || !tipo || !fecha_nacimiento || !sexo) {
+    // Validaciones detalladas
+    const camposFaltantes = []
+    if (!codigo) camposFaltantes.push('codigo')
+    if (!tipo) camposFaltantes.push('tipo')
+    if (!fecha_nacimiento) camposFaltantes.push('fecha_nacimiento')
+    if (!sexo) camposFaltantes.push('sexo')
+
+    if (camposFaltantes.length > 0) {
+      console.error('❌ Campos faltantes:', camposFaltantes)
       return {
         statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
         body: JSON.stringify({
           success: false,
-          error: 'Faltan campos requeridos: codigo, tipo, fecha_nacimiento, sexo',
+          error: `Faltan campos requeridos: ${camposFaltantes.join(', ')}`,
+          datos_recibidos: data,
         }),
       }
     }
@@ -70,13 +82,20 @@ exports.handler = async (event, context) => {
       }),
     }
   } catch (error) {
-    console.error('Error:', error)
+    console.error('❌ Error completo:', error)
+    console.error('❌ Stack trace:', error.stack)
+    
     return {
       statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify({
         success: false,
         error: 'Error al registrar animal',
         message: error.message,
+        detalles: error.toString(),
       }),
     }
   }

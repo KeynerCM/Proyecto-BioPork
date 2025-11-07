@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { Plus, Search, Edit2, Trash2, Eye, X } from 'lucide-react'
 import animalService from '../services/animalService'
+import { getFechaCostaRica, isoToInputDate } from '../utils/dateUtils'
 
 function Animals({ user }) {
   const [animals, setAnimals] = useState([])
@@ -25,7 +26,7 @@ function Animals({ user }) {
     codigo: '',
     tipo: 'engorde',
     raza: '',
-    fecha_nacimiento: '',
+    fecha_nacimiento: getFechaCostaRica(),
     peso_inicial: '',
     peso_actual: '',
     sexo: 'macho',
@@ -67,6 +68,27 @@ function Animals({ user }) {
     e.preventDefault()
     
     try {
+      // Validar campos requeridos antes de enviar
+      if (!formData.codigo || !formData.codigo.trim()) {
+        showToast('El código es requerido', 'error')
+        return
+      }
+      
+      if (!formData.tipo) {
+        showToast('El tipo es requerido', 'error')
+        return
+      }
+      
+      if (!formData.fecha_nacimiento) {
+        showToast('La fecha de nacimiento es requerida', 'error')
+        return
+      }
+      
+      if (!formData.sexo) {
+        showToast('El sexo es requerido', 'error')
+        return
+      }
+      
       // Limpiar y validar datos antes de enviar
       const animalData = {
         codigo: formData.codigo.trim(),
@@ -76,11 +98,12 @@ function Animals({ user }) {
         peso_inicial: formData.peso_inicial ? parseFloat(formData.peso_inicial) : null,
         peso_actual: formData.peso_actual ? parseFloat(formData.peso_actual) : null,
         sexo: formData.sexo,
-        estado: formData.estado,
+        estado: formData.estado || 'activo',
         grupo_id: formData.grupo_id || null,
       }
       
       console.log('📤 Enviando datos a la BD:', animalData)
+      console.log('📋 FormData original:', formData)
       
       if (editingAnimal) {
         // Actualizar
@@ -98,19 +121,30 @@ function Animals({ user }) {
         closeModal()
       }
     } catch (error) {
-      console.error('❌ Error al guardar:', error)
-      showToast(error.message || 'Error al guardar el animal', 'error')
+      console.error('❌ Error completo al guardar:', error)
+      console.error('❌ Respuesta del servidor:', error.response?.data)
+      
+      // Mostrar mensaje específico del backend si existe
+      const errorMessage = error.response?.data?.error 
+        || error.response?.data?.message 
+        || error.message 
+        || 'Error al guardar el animal'
+      
+      showToast(errorMessage, 'error')
     }
   }
 
   const handleEdit = (animal) => {
     console.log('📝 Editando animal:', animal)
+    console.log('📅 Fecha original:', animal.fecha_nacimiento)
     setEditingAnimal(animal)
     
-    // Formatear fecha para input type="date" (solo YYYY-MM-DD)
+    // Usar utilidad para formatear fecha de la base de datos
     const fechaNacimiento = animal.fecha_nacimiento 
-      ? animal.fecha_nacimiento.split('T')[0] 
+      ? isoToInputDate(animal.fecha_nacimiento)
       : ''
+    
+    console.log('📅 Fecha formateada:', fechaNacimiento)
     
     // Normalizar sexo a minúsculas para que coincida con los options del select
     const sexoNormalizado = animal.sexo 
@@ -165,7 +199,7 @@ function Animals({ user }) {
       codigo: '',
       tipo: 'engorde',
       raza: '',
-      fecha_nacimiento: '',
+      fecha_nacimiento: getFechaCostaRica(),
       peso_inicial: '',
       peso_actual: '',
       sexo: 'macho',
@@ -181,6 +215,7 @@ function Animals({ user }) {
       setFormData((prev) => ({
         ...prev,
         codigo: nextCodigo,
+        fecha_nacimiento: getFechaCostaRica(), // Asegurar fecha de CR al abrir
       }))
     } catch (error) {
       console.error('Error al obtener código:', error)
@@ -282,7 +317,13 @@ function Animals({ user }) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{animal.raza || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{animal.fecha_nacimiento}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {animal.fecha_nacimiento 
+                        ? (animal.fecha_nacimiento.includes('T') 
+                          ? animal.fecha_nacimiento.split('T')[0] 
+                          : animal.fecha_nacimiento.split(' ')[0] || animal.fecha_nacimiento)
+                        : 'N/A'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {animal.peso_actual ? `${animal.peso_actual} kg` : 'N/A'}
                     </td>
