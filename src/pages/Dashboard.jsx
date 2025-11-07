@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatearFecha } from '../utils/dateUtils'
 import {
   getDashboardStats,
   getRecentActivities,
@@ -92,7 +93,8 @@ function Dashboard() {
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
-                day: 'numeric' 
+                day: 'numeric',
+                timeZone: 'America/Costa_Rica'
               })}
             </p>
           </div>

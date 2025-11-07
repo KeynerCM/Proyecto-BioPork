@@ -4,6 +4,7 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { getFechaCostaRica, isoToInputDate } from '../utils/dateUtils'
 import {
   getGrupos,
   getNextCodigoGrupo,
@@ -42,7 +43,7 @@ function Groups({ user }) {
     tipo: 'engorde',
     corral_numero: '',
     capacidad: 10,
-    fecha_creacion: new Date().toISOString().split('T')[0],
+    fecha_creacion: getFechaCostaRica(),
     fecha_salida_programada: '',
     notas: '',
   })
@@ -84,8 +85,8 @@ function Groups({ user }) {
         tipo: grupo.tipo,
         corral_numero: grupo.corral_numero || '',
         capacidad: grupo.capacidad,
-        fecha_creacion: grupo.fecha_creacion?.split('T')[0] || '',
-        fecha_salida_programada: grupo.fecha_salida_programada?.split('T')[0] || '',
+        fecha_creacion: isoToInputDate(grupo.fecha_creacion),
+        fecha_salida_programada: grupo.fecha_salida_programada ? isoToInputDate(grupo.fecha_salida_programada) : '',
         notas: grupo.notas || '',
       })
     } else {
@@ -98,7 +99,7 @@ function Groups({ user }) {
           tipo: 'engorde',
           corral_numero: '',
           capacidad: 10,
-          fecha_creacion: new Date().toISOString().split('T')[0],
+          fecha_creacion: getFechaCostaRica(),
           fecha_salida_programada: '',
           notas: '',
         })
@@ -125,7 +126,7 @@ function Groups({ user }) {
         tipo: formData.tipo,
         corral_numero: formData.corral_numero?.trim() || null,
         capacidad: parseInt(formData.capacidad),
-        fecha_creacion: formData.fecha_creacion || new Date().toISOString().split('T')[0],
+        fecha_creacion: formData.fecha_creacion || getFechaCostaRica(),
         fecha_salida_programada: formData.fecha_salida_programada || null,
         notas: formData.notas?.trim() || null,
       }

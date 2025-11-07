@@ -212,15 +212,30 @@ function Animals({ user }) {
     try {
       // Obtener el siguiente código automáticamente
       const nextCodigo = await animalService.getNextCodigo()
-      setFormData((prev) => ({
-        ...prev,
-        codigo: nextCodigo,
-        fecha_nacimiento: getFechaCostaRica(), // Asegurar fecha de CR al abrir
-      }))
+      console.log('🔢 Código obtenido para nuevo animal:', nextCodigo)
+      
+      // Establecer todos los datos del formulario incluyendo el código
+      const newFormData = {
+        codigo: nextCodigo || '',
+        tipo: 'engorde',
+        raza: '',
+        fecha_nacimiento: getFechaCostaRica(),
+        peso_inicial: '',
+        peso_actual: '',
+        sexo: 'macho',
+        estado: 'activo',
+        grupo_id: null,
+      }
+      
+      console.log('📋 FormData preparado:', newFormData)
+      setFormData(newFormData)
+      
+      // Abrir el modal después de actualizar el estado
+      setShowModal(true)
     } catch (error) {
-      console.error('Error al obtener código:', error)
+      console.error('❌ Error al obtener código:', error)
+      showToast('Error al obtener el código del animal', 'error')
     }
-    setShowModal(true)
   }
 
   // Filtrar animales

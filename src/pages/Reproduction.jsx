@@ -4,6 +4,7 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { getFechaCostaRica, isoToInputDate, formatearFecha } from '../utils/dateUtils'
 import { cicloReproductivoService, partoService } from '../services/reproductionService'
 import { animalService } from '../services/animalService'
 
@@ -25,14 +26,14 @@ function Reproduction({ user }) {
   const [formData, setFormData] = useState({
     // Ciclo Reproductivo
     cerda_id: '',
-    fecha_celo: '',
+    fecha_celo: getFechaCostaRica(),
     fecha_monta: '',
     tipo_monta: 'natural',
     verraco: '',
     estado: 'esperando',
     // Parto
     ciclo_id: '',
-    fecha_parto: '',
+    fecha_parto: getFechaCostaRica(),
     lechones_nacidos: '',
     lechones_vivos: '',
     peso_promedio: '',
@@ -158,8 +159,8 @@ function Reproduction({ user }) {
     if (activeTab === 'ciclos') {
       setFormData({
         cerda_id: item.cerda_id.toString(),
-        fecha_celo: item.fecha_celo,
-        fecha_monta: item.fecha_monta || '',
+        fecha_celo: isoToInputDate(item.fecha_celo),
+        fecha_monta: item.fecha_monta ? isoToInputDate(item.fecha_monta) : '',
         tipo_monta: item.tipo_monta || 'natural',
         verraco: item.verraco || '',
         estado: item.estado,
@@ -169,7 +170,7 @@ function Reproduction({ user }) {
       setFormData({
         cerda_id: item.cerda_id.toString(),
         ciclo_id: item.ciclo_id?.toString() || '',
-        fecha_parto: item.fecha_parto,
+        fecha_parto: isoToInputDate(item.fecha_parto),
         lechones_nacidos: item.lechones_nacidos.toString(),
         lechones_vivos: item.lechones_vivos.toString(),
         peso_promedio: item.peso_promedio || '',
@@ -223,13 +224,13 @@ function Reproduction({ user }) {
     setEditingItem(null)
     setFormData({
       cerda_id: '',
-      fecha_celo: '',
+      fecha_celo: getFechaCostaRica(),
       fecha_monta: '',
       tipo_monta: 'natural',
       verraco: '',
       estado: 'esperando',
       ciclo_id: '',
-      fecha_parto: '',
+      fecha_parto: getFechaCostaRica(),
       lechones_nacidos: '',
       lechones_vivos: '',
       peso_promedio: '',
@@ -375,13 +376,13 @@ function Reproduction({ user }) {
                         <div className="text-sm text-gray-500">{ciclo.cerda_raza}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(ciclo.fecha_celo).toLocaleDateString('es')}
+                        {formatearFecha(ciclo.fecha_celo)}
                       </td>
                       <td className="px-6 py-4">
                         {ciclo.fecha_monta ? (
                           <>
                             <div className="text-sm text-gray-900">
-                              {new Date(ciclo.fecha_monta).toLocaleDateString('es')}
+                              {formatearFecha(ciclo.fecha_monta)}
                             </div>
                             <div className="text-xs text-gray-500">
                               {ciclo.tipo_monta === 'natural' ? '🐷 Natural' : '💉 Artificial'}
@@ -399,7 +400,7 @@ function Reproduction({ user }) {
                           <div className="text-sm">
                             <div className="flex items-center gap-1">
                               <Calendar size={14} className="text-purple-500" />
-                              {new Date(ciclo.fecha_estimada_parto).toLocaleDateString('es')}
+                              {formatearFecha(ciclo.fecha_estimada_parto)}
                             </div>
                             <div className="text-xs mt-1">
                               {getDiasParaParto(ciclo.dias_para_parto)}
@@ -475,7 +476,7 @@ function Reproduction({ user }) {
                         <div className="text-sm text-gray-500">{parto.cerda_raza}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(parto.fecha_parto).toLocaleDateString('es')}
+                        {formatearFecha(parto.fecha_parto)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
@@ -677,7 +678,7 @@ function Reproduction({ user }) {
                           .filter(c => c.cerda_id.toString() === formData.cerda_id)
                           .map((ciclo) => (
                             <option key={ciclo.id} value={ciclo.id}>
-                              Ciclo {new Date(ciclo.fecha_celo).toLocaleDateString('es')} - {ciclo.estado}
+                              Ciclo {formatearFecha(ciclo.fecha_celo)} - {ciclo.estado}
                             </option>
                           ))}
                       </select>
