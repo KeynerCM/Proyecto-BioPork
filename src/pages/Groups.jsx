@@ -162,19 +162,35 @@ const Groups = () => {
         return
       }
 
+      // Preparar datos para enviar
+      const grupoDataToSend = {
+        codigo: formData.codigo.trim(),
+        nombre: formData.nombre?.trim() || null,
+        tipo: formData.tipo,
+        corral_numero: formData.corral_numero?.trim() || null,
+        capacidad: parseInt(formData.capacidad),
+        fecha_creacion: formData.fecha_creacion || new Date().toISOString().split('T')[0],
+        fecha_salida_programada: formData.fecha_salida_programada || null,
+        notas: formData.notas?.trim() || null,
+      }
+
+      console.log('📋 Datos a enviar:', grupoDataToSend)
+
       if (grupoActual) {
         // Actualizar
-        await updateGrupo(grupoActual.id, formData)
+        await updateGrupo(grupoActual.id, grupoDataToSend)
         alert('Grupo actualizado exitosamente')
       } else {
         // Crear nuevo
-        await createGrupo(formData)
+        const result = await createGrupo(grupoDataToSend)
+        console.log('✅ Grupo creado:', result)
         alert('Grupo creado exitosamente')
       }
 
       setShowModalGrupo(false)
       loadData()
     } catch (err) {
+      console.error('❌ Error al guardar grupo:', err)
       alert('Error al guardar grupo: ' + err.message)
     }
   }
@@ -988,35 +1004,59 @@ const Groups = () => {
         </div>
       )}
 
-      {/* Modal Asignar Animal */}
+      {/* Modal Asignar Animal - Rediseñado */}
       {showModalAsignar && grupoSeleccionado && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  Asignar Animal al Grupo {grupoSeleccionado.codigo}
-                </h5>
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0" style={{ borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+              <div className="modal-header border-0 pb-0" style={{ padding: '2rem 2rem 0 2rem' }}>
+                <div>
+                  <h4 className="mb-1" style={{ color: '#2c3e50', fontWeight: '600' }}>
+                    <i className="bi bi-plus-circle me-2" style={{ color: '#388e3c' }}></i>
+                    Asignar Animal
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+                    Grupo {grupoSeleccionado.codigo} - {grupoSeleccionado.nombre || 'Sin nombre'}
+                  </p>
+                </div>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowModalAsignar(false)}
                 ></button>
               </div>
+
               <form onSubmit={handleSubmitAsignar}>
-                <div className="modal-body">
-                  <div className="alert alert-info">
-                    <strong>Tipo de grupo:</strong>{' '}
-                    <span className={`badge ${grupoSeleccionado.tipo === 'engorde' ? 'bg-info' : 'bg-warning'}`}>
-                      {grupoSeleccionado.tipo}
-                    </span>
-                    <br />
-                    <strong>Capacidad disponible:</strong>{' '}
-                    {grupoSeleccionado.capacidad - grupoSeleccionado.cantidad_actual} espacios
+                <div className="modal-body" style={{ padding: '2rem' }}>
+                  {/* Info del grupo */}
+                  <div className="row g-3 mb-4">
+                    <div className="col-6">
+                      <div className="p-3 rounded" style={{ backgroundColor: '#e3f2fd' }}>
+                        <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Tipo</small>
+                        <div className="d-flex align-items-center">
+                          <i className={`bi ${grupoSeleccionado.tipo === 'engorde' ? 'bi-piggy-bank' : 'bi-heart-fill'} me-2`} style={{ color: '#1976d2', fontSize: '1.2rem' }}></i>
+                          <span className="fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
+                            {grupoSeleccionado.tipo === 'engorde' ? 'Engorde' : 'Reproducción'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-6">
+                      <div className="p-3 rounded" style={{ backgroundColor: '#e8f5e9' }}>
+                        <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Disponibles</small>
+                        <div className="d-flex align-items-center">
+                          <i className="bi bi-check-circle me-2" style={{ color: '#388e3c', fontSize: '1.2rem' }}></i>
+                          <span className="fw-semibold" style={{ fontSize: '0.9rem', color: '#2c3e50' }}>
+                            {grupoSeleccionado.capacidad - (grupoSeleccionado.cantidad_actual || 0)} espacios
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
+                  {/* Selector de animal */}
                   <div className="mb-3">
-                    <label className="form-label">
+                    <label className="form-label" style={{ fontSize: '0.9rem', fontWeight: '600', color: '#2c3e50' }}>
                       Seleccionar Animal <span className="text-danger">*</span>
                     </label>
                     <select
@@ -1024,35 +1064,66 @@ const Groups = () => {
                       value={animalSeleccionado}
                       onChange={(e) => setAnimalSeleccionado(e.target.value)}
                       required
+                      style={{ 
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        fontSize: '0.9rem',
+                        padding: '0.75rem'
+                      }}
                     >
                       <option value="">-- Seleccione un animal --</option>
                       {animalesDisponibles.map((animal) => (
                         <option key={animal.id} value={animal.id}>
-                          {animal.codigo} - {animal.raza} ({animal.sexo})
-                          {animal.peso_actual && ` - ${animal.peso_actual} kg`}
+                          {animal.codigo} | {animal.raza} | {animal.sexo === 'macho' ? '♂' : '♀'}
+                          {animal.peso_actual && ` | ${animal.peso_actual} kg`}
                         </option>
                       ))}
                     </select>
-                    {animalesDisponibles.length === 0 && (
-                      <small className="text-danger">
-                        No hay animales disponibles de tipo "{grupoSeleccionado.tipo}"
+                    
+                    {animalesDisponibles.length === 0 ? (
+                      <div className="alert alert-warning mt-3 mb-0" style={{ 
+                        backgroundColor: '#fff3e0',
+                        border: '1px solid #f57c00',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem'
+                      }}>
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        No hay animales disponibles sin grupo asignado
+                      </div>
+                    ) : (
+                      <small className="text-muted mt-2 d-block" style={{ fontSize: '0.8rem' }}>
+                        <i className="bi bi-info-circle me-1"></i>
+                        {animalesDisponibles.length} animal(es) disponible(s)
                       </small>
                     )}
                   </div>
                 </div>
-                <div className="modal-footer">
+
+                <div className="modal-footer border-0" style={{ padding: '0 2rem 2rem 2rem' }}>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-light px-4"
                     onClick={() => setShowModalAsignar(false)}
+                    style={{ 
+                      borderRadius: '8px',
+                      border: '1px solid #e0e0e0',
+                      fontSize: '0.9rem'
+                    }}
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-primary"
-                    disabled={animalesDisponibles.length === 0}
+                    className="btn btn-success px-4"
+                    disabled={!animalSeleccionado || animalesDisponibles.length === 0}
+                    style={{ 
+                      borderRadius: '8px',
+                      fontSize: '0.9rem',
+                      backgroundColor: '#388e3c',
+                      border: 'none'
+                    }}
                   >
+                    <i className="bi bi-check-lg me-2"></i>
                     Asignar Animal
                   </button>
                 </div>
