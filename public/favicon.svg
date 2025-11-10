@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Fondo circular -->
+  <circle cx="32" cy="32" r="30" fill="#F8B4D9"/>
+  <circle cx="32" cy="32" r="28" fill="#FFC7E3"/>
+  
+  <!-- Cara del cerdo -->
+  <ellipse cx="32" cy="34" rx="18" ry="16" fill="#FFB8D9"/>
+  
+  <!-- Orejas -->
+  <ellipse cx="20" cy="22" rx="6" ry="9" fill="#FFB8D9" transform="rotate(-25 20 22)"/>
+  <ellipse cx="44" cy="22" rx="6" ry="9" fill="#FFB8D9" transform="rotate(25 44 22)"/>
+  <ellipse cx="20" cy="22" rx="3" ry="5" fill="#FFA0C9" transform="rotate(-25 20 22)"/>
+  <ellipse cx="44" cy="22" rx="3" ry="5" fill="#FFA0C9" transform="rotate(25 44 22)"/>
+  
+  <!-- Hocico -->
+  <ellipse cx="32" cy="38" rx="11" ry="9" fill="#FFA0C9"/>
+  <ellipse cx="28" cy="38" rx="3" ry="4" fill="#FF85B3"/>
+  <ellipse cx="36" cy="38" rx="3" ry="4" fill="#FF85B3"/>
+  
+  <!-- Ojos -->
+  <circle cx="26" cy="30" r="3" fill="#4A4A4A"/>
+  <circle cx="38" cy="30" r="3" fill="#4A4A4A"/>
+  <circle cx="27" cy="29" r="1.2" fill="#FFFFFF"/>
+  <circle cx="39" cy="29" r="1.2" fill="#FFFFFF"/>
+  
+  <!-- Sonrisa -->
+  <path d="M 26 42 Q 32 45 38 42" stroke="#FF85B3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>
