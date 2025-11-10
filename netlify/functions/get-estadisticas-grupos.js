@@ -24,9 +24,9 @@ exports.handler = async (event) => {
     console.log('✅ [get-estadisticas-grupos] Total de grupos:', JSON.stringify(totalGrupos, null, 2))
     
     console.log('🔍 [get-estadisticas-grupos] Ejecutando query para capacidad total...')
-    // Capacidad total
+    // Capacidad total (columna correcta es 'capacidad' según schema)
     const capacidadTotal = await sql`
-      SELECT SUM(capacidad_maxima) as total FROM grupos
+      SELECT SUM(capacidad) as total FROM grupos
     `
     console.log('✅ [get-estadisticas-grupos] Capacidad total:', JSON.stringify(capacidadTotal, null, 2))
     
