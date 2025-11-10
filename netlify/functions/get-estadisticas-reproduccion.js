@@ -18,13 +18,13 @@ exports.handler = async (event) => {
     
     // En gestación
     const enGestacion = await sql`
-      SELECT COUNT(*) as count FROM reproduccion WHERE estado = 'gestacion'
+      SELECT COUNT(*) as count FROM ciclos_reproductivos WHERE estado = 'gestacion'
     `
     
     // Partos esperados (próximos 30 días)
     const partosEsperados = await sql`
       SELECT COUNT(*) as count 
-      FROM reproduccion 
+      FROM ciclos_reproductivos 
       WHERE estado = 'gestacion'
       AND fecha_parto_estimada BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
     `

@@ -13,20 +13,19 @@ exports.handler = async (event) => {
     
     // Total de vacunaciones
     const totalVacunaciones = await sql`
-      SELECT COUNT(*) as count FROM registros_salud WHERE tipo = 'vacunacion'
+      SELECT COUNT(*) as count FROM vacunaciones
     `
     
     // Total de enfermedades
     const totalEnfermedades = await sql`
-      SELECT COUNT(*) as count FROM registros_salud WHERE tipo = 'enfermedad'
+      SELECT COUNT(*) as count FROM enfermedades
     `
     
     // Vacunas próximas (próximos 7 días)
     const vacunasProximas = await sql`
       SELECT COUNT(*) as count 
-      FROM registros_salud 
-      WHERE tipo = 'vacunacion' 
-      AND proxima_dosis IS NOT NULL
+      FROM vacunaciones 
+      WHERE proxima_dosis IS NOT NULL
       AND proxima_dosis BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
     `
 
