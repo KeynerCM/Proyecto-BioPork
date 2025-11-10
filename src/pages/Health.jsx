@@ -51,7 +51,7 @@ function Health({ user }) {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [vacResponse, enfResponse, animResponse] = await Promise.all([
+      const [vacResponse, enfResponse, animalesData] = await Promise.all([
         vacunacionService.getAll(),
         enfermedadService.getAll(),
         animalService.getAll()
@@ -60,21 +60,28 @@ function Health({ user }) {
       console.log('🔍 DEBUG Health - Respuestas recibidas:')
       console.log('Vacunaciones:', vacResponse)
       console.log('Enfermedades:', enfResponse)
-      console.log('Animales:', animResponse)
+      console.log('Animales:', animalesData)
       
-      if (!vacResponse.success || !enfResponse.success || !animResponse.success) {
-        console.error('❌ Alguna respuesta no fue exitosa')
-        throw new Error('Error al obtener datos del servidor')
+      // Validar solo las respuestas de los servicios de salud (que usan el formato {success, data})
+      if (!vacResponse?.success || !enfResponse?.success) {
+        console.error('❌ Alguna respuesta de salud no fue exitosa')
+        throw new Error('Error al obtener datos de salud del servidor')
+      }
+      
+      // animalService.getAll() retorna directamente el array, no {success, data}
+      if (!Array.isArray(animalesData)) {
+        console.error('❌ Datos de animales no son un array')
+        throw new Error('Error al obtener datos de animales')
       }
       
       console.log('✅ Datos a establecer:')
       console.log('- Vacunaciones:', vacResponse.data?.length || 0, 'registros')
       console.log('- Enfermedades:', enfResponse.data?.length || 0, 'registros')
-      console.log('- Animales:', animResponse.data?.length || 0, 'registros')
+      console.log('- Animales:', animalesData?.length || 0, 'registros')
       
       setVacunaciones(vacResponse.data || [])
       setEnfermedades(enfResponse.data || [])
-      setAnimales(animResponse.data || [])
+      setAnimales(animalesData || [])
     } catch (error) {
       console.error('Error loading health data:', error)
       showToast(error.response?.data?.error || 'Error al cargar los datos', 'error')
