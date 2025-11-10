@@ -31,12 +31,12 @@ exports.handler = async (event) => {
     console.log('✅ [get-estadisticas-salud] Total enfermedades:', JSON.stringify(totalEnfermedades, null, 2))
     
     console.log('🔍 [get-estadisticas-salud] Ejecutando query para vacunas próximas...')
-    // Vacunas próximas (próximos 7 días)
+    // Vacunas próximas (próximos 7 días) - campo correcto es 'proxima_fecha' según schema
     const vacunasProximas = await sql`
       SELECT COUNT(*) as count 
       FROM vacunaciones 
-      WHERE proxima_dosis IS NOT NULL
-      AND proxima_dosis BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+      WHERE proxima_fecha IS NOT NULL
+      AND proxima_fecha BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
     `
     console.log('✅ [get-estadisticas-salud] Vacunas próximas:', JSON.stringify(vacunasProximas, null, 2))
 

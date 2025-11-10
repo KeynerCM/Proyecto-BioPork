@@ -17,33 +17,34 @@ exports.handler = async (event) => {
     const sql = neon(process.env.DATABASE_URL)
     
     console.log('🔍 [get-estadisticas-reproduccion] Ejecutando query para cerdas activas...')
-    // Cerdas activas
+    // Cerdas activas (animales de reproducción tipo hembra)
     const cerdasActivas = await sql`
-      SELECT COUNT(*) as count FROM animales WHERE tipo = 'cerda' AND estado = 'activo'
+      SELECT COUNT(*) as count FROM animales WHERE tipo = 'reproduccion' AND sexo = 'hembra' AND estado = 'activo'
     `
     console.log('✅ [get-estadisticas-reproduccion] Cerdas activas:', JSON.stringify(cerdasActivas, null, 2))
     
     console.log('🔍 [get-estadisticas-reproduccion] Ejecutando query para en gestación...')
-    // En gestación
+    // En gestación (estado correcto es 'gestante' según schema)
     const enGestacion = await sql`
-      SELECT COUNT(*) as count FROM ciclos_reproductivos WHERE estado = 'gestacion'
+      SELECT COUNT(*) as count FROM ciclos_reproductivos WHERE estado = 'gestante'
     `
     console.log('✅ [get-estadisticas-reproduccion] En gestación:', JSON.stringify(enGestacion, null, 2))
     
     console.log('🔍 [get-estadisticas-reproduccion] Ejecutando query para partos esperados...')
-    // Partos esperados (próximos 30 días)
+    // Partos esperados (próximos 30 días, estado 'gestante')
     const partosEsperados = await sql`
       SELECT COUNT(*) as count 
       FROM ciclos_reproductivos 
-      WHERE estado = 'gestacion'
-      AND fecha_parto_estimada BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
+      WHERE estado = 'gestante'
+      AND fecha_estimada_parto BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
     `
     console.log('✅ [get-estadisticas-reproduccion] Partos esperados:', JSON.stringify(partosEsperados, null, 2))
     
     console.log('🔍 [get-estadisticas-reproduccion] Ejecutando query para total lechones...')
-    // Total de lechones
+    // Total de lechones (suma de lechones vivos de todos los partos recientes)
     const totalLechones = await sql`
-      SELECT COUNT(*) as count FROM animales WHERE tipo = 'lechon'
+      SELECT COALESCE(SUM(lechones_vivos), 0) as count FROM partos 
+      WHERE fecha_parto >= CURRENT_DATE - INTERVAL '60 days'
     `
     console.log('✅ [get-estadisticas-reproduccion] Total lechones:', JSON.stringify(totalLechones, null, 2))
 
