@@ -14,7 +14,7 @@ exports.handler = async (event) => {
 
   try {
     console.log('🔍 [get-estadisticas-grupos] Conectando a la base de datos...')
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
     
     console.log('🔍 [get-estadisticas-grupos] Ejecutando query para total de grupos...')
     // Total de grupos

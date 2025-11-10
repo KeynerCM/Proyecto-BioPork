@@ -14,7 +14,7 @@ exports.handler = async (event) => {
 
   try {
     console.log('🔍 [get-estadisticas-reproduccion] Conectando a la base de datos...')
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
     
     console.log('🔍 [get-estadisticas-reproduccion] Ejecutando query para cerdas activas...')
     // Cerdas activas (animales de reproducción tipo hembra)

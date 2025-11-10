@@ -2,12 +2,12 @@ const { neon } = require('@neondatabase/serverless')
 
 exports.handler = async (event) => {
   console.log('🔍 [test-db-connection] Iniciando prueba de conexión...')
-  console.log('🔍 [test-db-connection] DATABASE_URL existe:', !!process.env.DATABASE_URL)
-  console.log('🔍 [test-db-connection] DATABASE_URL length:', process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0)
+  console.log('🔍 [test-db-connection] NETLIFY_DATABASE_URL existe:', !!process.env.NETLIFY_DATABASE_URL)
+  console.log('🔍 [test-db-connection] NETLIFY_DATABASE_URL length:', process.env.NETLIFY_DATABASE_URL ? process.env.NETLIFY_DATABASE_URL.length : 0)
   
   try {
     console.log('🔍 [test-db-connection] Creando cliente SQL...')
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(process.env.NETLIFY_DATABASE_URL)
     
     console.log('🔍 [test-db-connection] Ejecutando query de prueba...')
     const result = await sql`SELECT NOW() as current_time, version() as pg_version`
