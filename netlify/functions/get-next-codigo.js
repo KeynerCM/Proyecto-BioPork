@@ -43,7 +43,9 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        codigo: nextCodigo,
+        data: {
+          codigo: nextCodigo
+        }
       }),
     }
   } catch (error) {
