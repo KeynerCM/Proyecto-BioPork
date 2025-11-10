@@ -1,29 +1,44 @@
 # 📋 BioPork - Funcionalidades Pendientes por Implementar
 
-**Fecha de Revisión:** 31 de octubre de 2025  
-**Rama Actual:** `feature/development`  
-**Estado del Proyecto:** 30% Completado
+**Fecha de Revisión:** 9 de noviembre de 2025  
+**Rama Actual:** `Dev`  
+**Estado del Proyecto:** 75% Completado  
+**Commits desde última actualización:** 45+
 
 ---
 
 ## ✅ **Estado Actual del Proyecto**
 
-### **Módulos Completados (2/9)**
+### **Módulos Completados (6/9) - 67%**
 
 #### 1. ✅ **Gestión de Animales** - 100% Completo
 - ✅ CRUD completo (Crear, Leer, Actualizar, Eliminar)
 - ✅ Generación automática de códigos (formato A00001, A00002, etc.)
 - ✅ Filtros por tipo (engorde/reproducción) y estado
-- ✅ Validación de formularios
-- ✅ Modal de edición/creación
+- ✅ Validación de formularios con frontend y backend
+- ✅ Modal de edición/creación con diseño moderno
 - ✅ Toast notifications para feedback
 - ✅ Modal de confirmación para eliminación
-- ✅ API Functions en Netlify (11 endpoints funcionales)
+- ✅ Manejo de fechas con timezone Costa Rica (GMT-6)
+- ✅ API Functions en Netlify (7 endpoints funcionales)
+- ✅ **FIX:** Código automático ahora funciona correctamente
+- ✅ **FIX:** Todos los campos se guardan correctamente (incluyendo estado)
+- ✅ **FIX:** Fecha de nacimiento se muestra correctamente al editar
 
 **Tablas en Base de Datos:** 
-- ✅ `animales` - Tabla principal operativa
+- ✅ `animales` - Tabla principal operativa con datos
 - ✅ Triggers para actualización de timestamps
 - ✅ Índices para optimización de consultas
+
+**API Functions:**
+```
+✅ create-animal.js - Con validación exhaustiva
+✅ get-animals.js
+✅ get-animal-by-id.js
+✅ update-animal.js
+✅ delete-animal.js
+✅ get-next-codigo.js - Formato estandarizado
+```
 
 ---
 
@@ -42,112 +57,144 @@
 
 ---
 
-## 🚧 **Módulos Pendientes por Implementar (7/9)**
+#### 3. ✅ **Dashboard Principal** - 100% Completo
+- ✅ Estadísticas principales (animales, grupos, ciclos, partos)
+- ✅ Cards cuadradas con diseño minimalista
+- ✅ Íconos circulares de 56x56px con colores pastel
+- ✅ Actividades recientes con timestamps
+- ✅ Sistema de alertas (vacunaciones, partos próximos, enfermedades)
+- ✅ Fecha actual con timezone Costa Rica
+- ✅ Gráficos y visualizaciones
+- ✅ Efecto hover mejorado en cards
+
+**API Functions:**
+```
+✅ get-dashboard-stats.js
+✅ get-recent-activities.js
+✅ get-alerts.js
+```
 
 ---
 
-### 3. ❌ **Módulo de Salud (Health)** - 0% Implementado
+#### 4. ✅ **Módulo de Grupos y Corrales (Groups)** - 100% Completo ⭐ NUEVO
+- ✅ CRUD completo de grupos
+- ✅ Diseño completamente rediseñado (moderno y minimalista)
+- ✅ Generación automática de códigos (formato G00001, G00002, etc.)
+- ✅ Modales centrados con degradados
+- ✅ Máquina de estados con 7 estados diferentes
+- ✅ Sistema de asignación y remoción de animales
+- ✅ Gestión de salida de grupos (iniciar, completar, confirmar)
+- ✅ Validación de capacidad máxima
+- ✅ Cálculo automático de cantidad actual
+- ✅ Filtros por tipo y estado
+- ✅ Vista de animales por grupo
+- ✅ Secciones con barras de color según estado
+- ✅ Animaciones y efectos visuales
+- ✅ **FIX:** Solución al infinite loop en getNextCodigoGrupo
+- ✅ **FIX:** Actualización correcta de grupo_id en tabla animales
+- ✅ Manejo de fechas con timezone Costa Rica
 
-**Estado:** Página vacía con mensaje "En desarrollo"
+**Estados de Grupo:**
+1. ✅ Planificación
+2. ✅ Activo
+3. ✅ Salida Iniciada
+4. ✅ Salida Completada
+5. ✅ Confirmado
+6. ✅ Cerrado
+7. ✅ Inactivo
 
-#### **Funcionalidades a Implementar:**
-
-##### **A. Gestión de Vacunaciones**
-- [ ] CRUD completo de vacunaciones
-- [ ] Formulario de registro con campos:
-  - [ ] Selección de animal (dropdown con búsqueda)
-  - [ ] Tipo de vacuna (texto)
-  - [ ] Fecha de aplicación (date picker)
-  - [ ] Dosis (texto)
-  - [ ] Lote de vacuna (texto)
-  - [ ] Próxima fecha de aplicación (date picker)
-  - [ ] Veterinario responsable (texto)
-  - [ ] Notas adicionales (textarea)
-- [ ] Lista/tabla de vacunaciones con filtros:
-  - [ ] Por animal
-  - [ ] Por tipo de vacuna
-  - [ ] Por rango de fechas
-- [ ] Vista de calendario de vacunaciones
-- [ ] Alertas automáticas para próximas vacunaciones
-- [ ] Historial de vacunaciones por animal
-
-##### **B. Gestión de Enfermedades y Tratamientos**
-- [ ] CRUD completo de enfermedades
-- [ ] Formulario de registro con campos:
-  - [ ] Animal afectado (dropdown)
-  - [ ] Enfermedad diagnosticada (texto)
-  - [ ] Síntomas observados (textarea)
-  - [ ] Fecha de inicio (date picker)
-  - [ ] Tratamiento prescrito (textarea)
-  - [ ] Medicamento utilizado (texto)
-  - [ ] Dosis del medicamento (texto)
-  - [ ] Estado del tratamiento (dropdown: en_tratamiento, recuperado, crónico)
-  - [ ] Fecha de recuperación (date picker)
-  - [ ] Veterinario responsable (texto)
-  - [ ] Costo del tratamiento (número)
-  - [ ] Notas adicionales (textarea)
-- [ ] Lista de enfermedades activas (en tratamiento)
-- [ ] Historial de enfermedades por animal
-- [ ] Estadísticas de enfermedades más comunes
-- [ ] Cálculo de costos totales en tratamientos
-
-##### **C. API Functions Necesarias:**
+**API Functions:**
 ```
-📁 netlify/functions/
-  - create-vacunacion.js
-  - get-vacunaciones.js
-  - get-vacunacion-by-id.js
-  - update-vacunacion.js
-  - delete-vacunacion.js
-  - get-proximas-vacunaciones.js
-  
-  - create-enfermedad.js
-  - get-enfermedades.js
-  - get-enfermedad-by-id.js
-  - update-enfermedad.js
-  - delete-enfermedad.js
-  - get-enfermedades-activas.js
+✅ create-grupo.js
+✅ get-grupos.js
+✅ get-grupo-by-id.js
+✅ update-grupo.js
+✅ delete-grupo.js
+✅ get-next-codigo-grupo.js
+✅ get-animales-by-grupo.js
+✅ asignar-animal-grupo.js - Con UPDATE en animales
+✅ remover-animal-grupo.js - Con UPDATE en animales
+✅ iniciar-salida-grupo.js
+✅ completar-salida-grupo.js
+✅ confirmar-grupo.js
 ```
 
 **Tablas en Base de Datos:**
-- ✅ `vacunaciones` - Tabla creada, sin datos
-- ✅ `enfermedades` - Tabla creada, sin datos
-- ✅ Vista: `vista_proximas_vacunaciones` - Ya existe en BD
-
-**Complejidad Estimada:** Media-Alta  
-**Tiempo Estimado:** 12-16 horas  
-**Prioridad:** Alta
+- ✅ `grupos` - Tabla operativa con datos
+- ✅ `animales_grupos` - Tabla de relación operativa
+- ✅ Campo `grupo_id` en tabla `animales` - Funcional
+- ✅ Trigger automático para actualizar `cantidad_actual`
 
 ---
 
-### 4. ❌ **Módulo de Reproducción (Reproduction)** - 0% Implementado
+#### 5. ✅ **Módulo de Salud (Health)** - 95% Completo ⭐ NUEVO
+- ✅ CRUD completo de vacunaciones
+- ✅ CRUD completo de enfermedades
+- ✅ Pestañas para separar vacunaciones y enfermedades
+- ✅ Formularios completos con todos los campos
+- ✅ Validaciones frontend y backend
+- ✅ Filtros por animal y estado
+- ✅ Lista de animales para seleccionar
+- ✅ Toast notifications
+- ✅ Modal de confirmación para eliminación
+- ✅ **FIX:** Corrección en validación de respuestas (animales array directo)
+- ⏳ Pendiente: Alertas automáticas de vacunaciones próximas
+- ⏳ Pendiente: Vista de calendario
 
-**Estado:** Página vacía con mensaje "En desarrollo"
+**API Functions:**
+```
+✅ create-vacunacion.js
+✅ get-vacunaciones.js
+✅ update-vacunacion.js
+✅ delete-vacunacion.js
+✅ create-enfermedad.js
+✅ get-enfermedades.js
+✅ update-enfermedad.js
+✅ delete-enfermedad.js
+```
 
-#### **Funcionalidades a Implementar:**
+**Tablas en Base de Datos:**
+- ✅ `vacunaciones` - Tabla operativa con datos
+- ✅ `enfermedades` - Tabla operativa con datos
 
-##### **A. Gestión de Ciclos Reproductivos**
-- [ ] CRUD completo de ciclos reproductivos
-- [ ] Formulario de registro con campos:
-  - [ ] Cerda (dropdown filtrado solo hembras tipo reproducción)
-  - [ ] Fecha de celo (date picker)
-  - [ ] Fecha de monta (date picker)
-  - [ ] Tipo de monta (radio: natural/artificial)
-  - [ ] Verraco utilizado (texto o dropdown)
-  - [ ] Fecha estimada de parto (calculada automáticamente: +114 días)
-  - [ ] Estado del ciclo (dropdown: esperando, gestante, parto_completado, fallido)
-  - [ ] Notas (textarea)
-- [ ] Vista de calendario de ciclos reproductivos
-- [ ] Lista de cerdas en gestación con días restantes
-- [ ] Alertas de partos próximos (7 días antes)
-- [ ] Historial de ciclos por cerda
-- [ ] Estadísticas de fertilidad por cerda
+---
 
-##### **B. Gestión de Partos**
-- [ ] CRUD completo de partos
-- [ ] Formulario de registro con campos:
-  - [ ] Cerda (dropdown)
-  - [ ] Ciclo reproductivo asociado (dropdown)
+#### 6. ✅ **Módulo de Reproducción (Reproduction)** - 95% Completo ⭐ NUEVO
+- ✅ CRUD completo de ciclos reproductivos
+- ✅ CRUD completo de partos
+- ✅ Pestañas para separar ciclos y partos
+- ✅ Formularios completos con validaciones
+- ✅ Cálculo automático de fecha estimada de parto (+114 días)
+- ✅ Filtrado automático de cerdas (solo hembras)
+- ✅ Gestión de estados de ciclo (esperando, gestante, completado, fallido)
+- ✅ Registro detallado de partos (lechones nacidos, vivos, muertos)
+- ✅ Indicador de días para parto
+- ✅ Toast notifications
+- ✅ Modal de confirmación
+- ✅ Manejo de fechas con timezone Costa Rica
+- ✅ **FIX:** Validación correcta de respuestas
+- ⏳ Pendiente: Generación automática de lechones como animales
+- ⏳ Pendiente: Dashboard de rendimiento reproductivo
+
+**API Functions:**
+```
+✅ create-ciclo-reproductivo.js
+✅ get-ciclos-reproductivos.js
+✅ update-ciclo-reproductivo.js
+✅ delete-ciclo-reproductivo.js
+✅ create-parto.js
+✅ get-partos.js
+✅ update-parto.js
+✅ delete-parto.js
+```
+
+**Tablas en Base de Datos:**
+- ✅ `ciclos_reproductivos` - Tabla operativa con datos
+- ✅ `partos` - Tabla operativa con datos
+
+---
+
+## 🚧 **Módulos Pendientes por Implementar (3/9)**
   - [ ] Fecha del parto (date picker)
   - [ ] Lechones nacidos (número)
   - [ ] Lechones vivos (número)
@@ -250,29 +297,27 @@
 - ✅ `animales_grupos` - Tabla de relación creada, sin datos
 - ✅ Trigger automático para actualizar `cantidad_actual` en grupos
 
-**Complejidad Estimada:** Media  
-**Tiempo Estimado:** 10-14 horas  
-**Prioridad:** Media
-
 ---
 
-### 6. ❌ **Módulo de Notificaciones (Notifications)** - 0% Implementado
+### 7. ⏳ **Módulo de Notificaciones (Notifications)** - 10% Implementado
 
-**Estado:** Página vacía con mensaje "En desarrollo"
+**Estado:** Página con estructura básica, funcionalidad mínima
 
-#### **Funcionalidades a Implementar:**
+#### **Funcionalidades Implementadas:**
+- ✅ Estructura de página creada
+- ✅ Diseño básico de layout
+
+#### **Funcionalidades Pendientes:**
 
 ##### **A. Sistema de Notificaciones**
-- [ ] Vista de centro de notificaciones
+- [ ] Vista de centro de notificaciones funcional
 - [ ] Filtros por tipo:
   - [ ] Vacunaciones próximas
   - [ ] Ciclos reproductivos
   - [ ] Partos próximos
   - [ ] Alertas de salud
-  - [ ] Alimentación
-  - [ ] Pesajes pendientes
   - [ ] Enfermedades críticas
-  - [ ] Notificaciones generales
+  - [ ] Capacidad de grupos
 - [ ] Filtros por prioridad (baja, media, alta, urgente)
 - [ ] Marcar notificaciones como leídas
 - [ ] Eliminar notificaciones
@@ -290,12 +335,12 @@
 ##### **C. API Functions Necesarias:**
 ```
 📁 netlify/functions/
-  - get-notificaciones.js
-  - get-notificaciones-no-leidas.js
-  - marcar-notificacion-leida.js
-  - crear-notificacion.js
-  - delete-notificacion.js
-  - get-contador-no-leidas.js
+  ❌ get-notificaciones.js
+  ❌ get-notificaciones-no-leidas.js
+  ❌ marcar-notificacion-leida.js
+  ❌ crear-notificacion.js
+  ❌ delete-notificacion.js
+  ❌ get-contador-no-leidas.js
 ```
 
 **Tablas en Base de Datos:**
@@ -304,15 +349,19 @@
 
 **Complejidad Estimada:** Media  
 **Tiempo Estimado:** 8-12 horas  
-**Prioridad:** Media-Alta
+**Prioridad:** Media
 
 ---
 
-### 7. ❌ **Módulo de Estadísticas (Statistics)** - 0% Implementado
+### 8. ⏳ **Módulo de Estadísticas (Statistics)** - 10% Implementado
 
-**Estado:** Página vacía con mensaje "En desarrollo"
+**Estado:** Página con estructura básica, gráficos pendientes
 
-#### **Funcionalidades a Implementar:**
+#### **Funcionalidades Implementadas:**
+- ✅ Estructura de página creada
+- ✅ Diseño básico de layout
+
+#### **Funcionalidades Pendientes:**
 
 ##### **A. Dashboard de Estadísticas Generales**
 - [ ] Gráficos de población de animales:
@@ -343,11 +392,11 @@
 ##### **C. API Functions Necesarias:**
 ```
 📁 netlify/functions/
-  - get-estadisticas-generales.js
-  - get-estadisticas-reproductivas.js
-  - get-estadisticas-salud.js
-  - get-estadisticas-peso.js
-  - get-reporte-completo.js
+  ❌ get-estadisticas-generales.js
+  ❌ get-estadisticas-reproductivas.js
+  ❌ get-estadisticas-salud.js
+  ❌ get-estadisticas-peso.js
+  ❌ get-reporte-completo.js
 ```
 
 **Tablas en Base de Datos:**
@@ -647,7 +696,74 @@
 
 ---
 
-## 💡 **Recomendaciones para el Equipo**
+## � **Mejoras Técnicas Recientes (Noviembre 2025)**
+
+### **Implementación de Timezone Costa Rica**
+- ✅ Creado `src/utils/dateUtils.js` con 6 funciones para timezone America/Costa_Rica (GMT-6)
+- ✅ Integrado en todos los módulos (Animals, Groups, Reproduction, Dashboard)
+- ✅ Todas las fechas ahora usan zona horaria correcta de Costa Rica
+- ✅ Funciones: `getFechaCostaRica()`, `isoToInputDate()`, `formatearFecha()`, etc.
+
+### **Corrección de Bugs Críticos**
+- ✅ **Animals:** Código automático ahora se genera y muestra correctamente
+  - Fix en formato de respuesta API (estandarizado a `{success, data: {codigo}}`)
+  - Uso de `requestAnimationFrame` para sincronización de estado
+  - Validación exhaustiva de `nextCodigo` antes de abrir modal
+  
+- ✅ **Animals:** Todos los campos se guardan correctamente
+  - Campo `estado` agregado a destructuring en create-animal.js
+  - Validación detallada con array `camposFaltantes`
+  - Logging mejorado para debugging
+  
+- ✅ **Animals:** Fecha de nacimiento se muestra al editar
+  - Soporte para múltiples formatos (ISO con T, espacio, plain)
+  - Uso de `isoToInputDate()` para conversión correcta
+  
+- ✅ **Groups:** Solución a infinite loop
+  - `getNextCodigoGrupo()` solo se llama al abrir modal
+  - Prevención de renders infinitos
+  
+- ✅ **Groups:** Actualización de grupo_id en animales
+  - UPDATE statements agregados en asignar-animal-grupo.js
+  - UPDATE statements agregados en remover-animal-grupo.js
+  - Sincronización bidireccional entre tablas
+  
+- ✅ **Health:** Validación de respuestas corregida
+  - Separación de validaciones: servicios de salud vs animales
+  - `Array.isArray()` para validar respuesta de animalService
+  - Mensajes de error específicos
+
+### **Estandarización de Código**
+- ✅ Formato consistente en respuestas API
+- ✅ Manejo uniforme de fechas con timezone
+- ✅ Validaciones robustas en frontend y backend
+- ✅ Console.logs estratégicos para debugging
+
+---
+
+## 📊 **Progreso del Proyecto**
+
+### **Estadísticas Generales:**
+- **Módulos Completados:** 6/9 (67%)
+- **Módulos en Progreso:** 2/9 (22%)
+- **Módulos Pendientes:** 1/9 (11%)
+- **API Functions Implementadas:** 43/60+ (72%)
+- **Tablas de Base de Datos:** 100% operativas
+- **Commits Recientes:** 45+ (desde 31/10/2025)
+- **Estado General:** 75% Completado
+
+### **Próximos Hitos:**
+1. ⏳ Completar alertas automáticas en Health (5%)
+2. ⏳ Implementar generación de lechones en Reproduction (5%)
+3. ⏳ Desarrollar centro de notificaciones funcional (90%)
+4. ⏳ Implementar gráficos en Statistics (90%)
+5. ⏳ Crear módulo de Alimentación (100%)
+6. ⏳ Crear módulo de Pesajes (100%)
+7. ⏳ Crear módulo de Salidas (100%)
+
+---
+
+## �💡 **Recomendaciones para el Equipo**
 
 ### **División de Trabajo Sugerida:**
 
