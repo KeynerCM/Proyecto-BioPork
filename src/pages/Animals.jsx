@@ -214,9 +214,15 @@ function Animals({ user }) {
       const nextCodigo = await animalService.getNextCodigo()
       console.log('🔢 Código obtenido para nuevo animal:', nextCodigo)
       
+      if (!nextCodigo) {
+        console.error('❌ No se obtuvo código')
+        showToast('Error: No se pudo generar el código', 'error')
+        return
+      }
+      
       // Establecer todos los datos del formulario incluyendo el código
       const newFormData = {
-        codigo: nextCodigo || '',
+        codigo: nextCodigo,
         tipo: 'engorde',
         raza: '',
         fecha_nacimiento: getFechaCostaRica(),
@@ -228,10 +234,14 @@ function Animals({ user }) {
       }
       
       console.log('📋 FormData preparado:', newFormData)
+      
+      // Actualizar el estado
       setFormData(newFormData)
       
-      // Abrir el modal después de actualizar el estado
-      setShowModal(true)
+      // Usar requestAnimationFrame para asegurar que el DOM se actualice antes de abrir el modal
+      requestAnimationFrame(() => {
+        setShowModal(true)
+      })
     } catch (error) {
       console.error('❌ Error al obtener código:', error)
       showToast('Error al obtener el código del animal', 'error')
@@ -385,6 +395,10 @@ function Animals({ user }) {
       {/* Modal de formulario */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          {(() => {
+            console.log('🖼️ Renderizando modal con formData.codigo:', formData.codigo)
+            return null
+          })()}
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-2xl font-bold text-gray-800">
