@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { PiggyBank, Lock, User } from 'lucide-react'
-import { motion } from 'framer-motion'
 import userService from '../services/userService'
 
 function Login({ onLogin }) {
@@ -36,12 +35,7 @@ function Login({ onLogin }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-        className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md"
-      >
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
             <PiggyBank size={32} className="text-primary-600" />
@@ -97,7 +91,7 @@ function Login({ onLogin }) {
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   )
 }

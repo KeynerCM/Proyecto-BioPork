@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { 
+  Home,
   PiggyBank, 
   Heart, 
   Syringe, 
