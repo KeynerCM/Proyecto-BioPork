@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
 import { 
-  Home, 
   PiggyBank, 
   Heart, 
   Syringe, 
@@ -15,12 +14,11 @@ import {
 import { useState } from 'react'
 
 const menuItems = [
-  { path: '/', icon: Home, label: 'Dashboard' },
+  { path: '/', icon: BarChart3, label: 'Estadísticas' },
   { path: '/animales', icon: PiggyBank, label: 'Animales' },
   { path: '/reproduccion', icon: Heart, label: 'Reproducción' },
   { path: '/salud', icon: Syringe, label: 'Salud' },
   { path: '/grupos', icon: Users, label: 'Grupos' },
-  { path: '/estadisticas', icon: BarChart3, label: 'Estadísticas' },
   { path: '/notificaciones', icon: Bell, label: 'Notificaciones' },
   { path: '/usuarios', icon: Shield, label: 'Usuarios', adminOnly: true },
 ]

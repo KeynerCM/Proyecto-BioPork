@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
 import Animals from './pages/Animals'
 import Reproduction from './pages/Reproduction'
 import Health from './pages/Health'
@@ -56,12 +55,11 @@ function App() {
   return (
     <Layout user={user} onLogout={handleLogout}>
       <Routes>
-        <Route path="/" element={<Dashboard user={user} />} />
+        <Route path="/" element={<Statistics user={user} />} />
         <Route path="/animales" element={<Animals user={user} />} />
         <Route path="/reproduccion" element={<Reproduction user={user} />} />
         <Route path="/salud" element={<Health user={user} />} />
         <Route path="/grupos" element={<Groups user={user} />} />
-        <Route path="/estadisticas" element={<Statistics user={user} />} />
         <Route path="/notificaciones" element={<Notifications user={user} />} />
         <Route 
           path="/usuarios" 
