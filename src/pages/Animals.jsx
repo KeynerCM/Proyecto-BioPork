@@ -471,6 +471,7 @@ function Animals({ user }) {
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     name="peso_inicial"
                     value={formData.peso_inicial}
                     onChange={handleInputChange}
@@ -483,6 +484,7 @@ function Animals({ user }) {
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     name="peso_actual"
                     value={formData.peso_actual}
                     onChange={handleInputChange}
