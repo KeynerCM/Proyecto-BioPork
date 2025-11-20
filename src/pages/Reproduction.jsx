@@ -582,7 +582,7 @@ function Reproduction({ user }) {
                           type="date"
                           value={formData.fecha_celo}
                           onChange={(e) => setFormData({ ...formData, fecha_celo: e.target.value })}
-                          max={new Date().toISOString().split('T')[0]}
+                          max={getFechaCostaRica()}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />
@@ -595,7 +595,7 @@ function Reproduction({ user }) {
                           type="date"
                           value={formData.fecha_monta}
                           onChange={(e) => setFormData({ ...formData, fecha_monta: e.target.value })}
-                          max={new Date().toISOString().split('T')[0]}
+                          max={getFechaCostaRica()}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                         <p className="text-xs text-gray-500 mt-1">
@@ -692,7 +692,7 @@ function Reproduction({ user }) {
                         type="date"
                         value={formData.fecha_parto}
                         onChange={(e) => setFormData({ ...formData, fecha_parto: e.target.value })}
-                        max={new Date().toISOString().split('T')[0]}
+                        max={getFechaCostaRica()}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       />

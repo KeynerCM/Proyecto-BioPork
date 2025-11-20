@@ -6,6 +6,7 @@ import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { vacunacionService, enfermedadService } from '../services/healthService'
 import { animalService } from '../services/animalService'
+import { formatearFecha, getFechaCostaRica } from '../utils/dateUtils'
 
 function Health({ user }) {
   const [activeTab, setActiveTab] = useState('vacunaciones')
@@ -354,14 +355,14 @@ function Health({ user }) {
                         <div className="text-sm text-gray-900">{vac.tipo_vacuna}</div>
                         {vac.dosis && <div className="text-sm text-gray-500">Dosis: {vac.dosis}</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(vac.fecha_aplicacion).toLocaleDateString('es')}
-                      </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatearFecha(vac.fecha_aplicacion)}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {vac.proxima_fecha ? (
                           <div className="flex items-center text-sm">
                             <Calendar size={14} className="mr-1 text-orange-500" />
-                            {new Date(vac.proxima_fecha).toLocaleDateString('es')}
+                            {formatearFecha(vac.proxima_fecha)}
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>
@@ -439,7 +440,7 @@ function Health({ user }) {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(enf.fecha_inicio).toLocaleDateString('es')}
+                        {formatearFecha(enf.fecha_inicio)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{enf.medicamento || '-'}</div>
@@ -544,7 +545,7 @@ function Health({ user }) {
                           type="date"
                           value={formData.fecha_aplicacion}
                           onChange={(e) => setFormData({ ...formData, fecha_aplicacion: e.target.value })}
-                          max={new Date().toISOString().split('T')[0]}
+                          max={getFechaCostaRica()}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />
@@ -611,7 +612,7 @@ function Health({ user }) {
                           type="date"
                           value={formData.fecha_inicio}
                           onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
-                          max={new Date().toISOString().split('T')[0]}
+                          max={getFechaCostaRica()}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           required
                         />

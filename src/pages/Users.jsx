@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { Plus, Search, Edit2, Trash2, X, Shield, User as UserIcon } from 'lucide-react'
 import userService from '../services/userService'
+import { formatearFechaHora } from '../utils/dateUtils'
 
 function Users() {
   const [users, setUsers] = useState([])
@@ -272,7 +273,7 @@ function Users() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.ultimo_acceso ? new Date(user.ultimo_acceso).toLocaleString('es') : 'Nunca'}
+                      {user.ultimo_acceso ? formatearFechaHora(user.ultimo_acceso) : 'Nunca'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
