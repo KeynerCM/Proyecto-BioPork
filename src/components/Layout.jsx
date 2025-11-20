@@ -14,7 +14,7 @@ import {
 import { useState } from 'react'
 
 const menuItems = [
-  { path: '/', icon: BarChart3, label: 'Estadísticas' },
+  { path: '/', icon: Home, label: 'Estadísticas' },
   { path: '/animales', icon: PiggyBank, label: 'Animales' },
   { path: '/reproduccion', icon: Heart, label: 'Reproducción' },
   { path: '/salud', icon: Syringe, label: 'Salud' },

@@ -97,13 +97,6 @@ function Login({ onLogin }) {
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          ¿No tienes cuenta?{' '}
-          <a href="#" className="text-primary-600 hover:text-primary-700 font-medium">
-            Regístrate
-          </a>
-        </p>
       </motion.div>
     </div>
   )
